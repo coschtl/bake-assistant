@@ -1,0 +1,37 @@
+<resources>
+    <string name="minutes">Minuten</string>
+    <string name="hours">Stunden</string>
+    <string name="save">Speichern</string>
+    <string name="recipe">Rezept</string>
+    <string name="settings">Einstellungen</string>
+    <string name="add_step_recipe">Schritt hinzufügen</string>
+    <string name="start_now">Sofort starten</string>
+    <string name="start_later">Später starten</string>
+    <string name="new_step">Neuer Schritt</string>
+    <string name="new_recipe">Neues Rezept</string>
+    <string name="step_no">Schritt No. </string>
+    <string name="no_recipes">Es existieren noch keine Rezepte</string>
+    <string name="no_steps">Es existieren noch keine Schritte</string>
+    <string name="app_name">Back-Assistent</string>
+    <string name="default_times">Default Zeiten</string>
+
+    <string name="mixing">Mischen</string>
+    <string name="forming">Formen</string>
+    <string name="weigh_in">Zutaten einwiegen</string>
+    <string name="folding">Dehnen und falten</string>
+    <!-- variable times -->
+    <string name="kneading">Kneten</string>
+    <string name="ripening">Reifen</string>
+    <string name="baking">Backen</string>
+    <string name="acclimatisation">Akklimatisieren</string>
+
+
+    <string name="menu_edit">Bearbeiten</string>
+    <string name="menu_up">Nach oben</string>
+    <string name="menu_down">Nach unten</string>
+
+    <string name="title_edit_step">Schritt #{0} bearbeiten:</string>
+    <string name="done">Fertig</string>
+
+    <string name="title_preparation">Zubereitung</string>
+</resources>
