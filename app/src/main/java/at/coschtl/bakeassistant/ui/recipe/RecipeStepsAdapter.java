@@ -14,12 +14,13 @@ import java.util.List;
 
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.model.Step;
+import at.coschtl.bakeassistant.ui.LongClickPosition;
 
 public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.ViewHolder> {
 
     private final StepEditor stepEditor;
     private List<Step> steps;
-    private final LongClickPosition aktLongClickPosition;
+    private final LongClickPosition<Step> aktLongClickPosition;
 
     public RecipeStepsAdapter(List<Step> dataSet, StepEditor stepEditor) {
         steps = new ArrayList<>(dataSet);
@@ -67,7 +68,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         return steps.size();
     }
 
-    public LongClickPosition getAktLongClickPosition() {
+    public LongClickPosition<Step> getAktLongClickPosition() {
         return aktLongClickPosition;
     }
 
@@ -85,13 +86,13 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         private final StepEditor stepEditor;
         private Step step;
 
-        public ViewHolder(View view, StepEditor stepEditor, LongClickPosition aktLongClickPosition) {
+        public ViewHolder(View view, StepEditor stepEditor, LongClickPosition<Step> aktLongClickPosition) {
             super(view);
             this.stepEditor = stepEditor;
 
             textView = view.findViewById(R.id.step_name);
             textView.setOnLongClickListener(v -> {
-                aktLongClickPosition.setStep(step);
+                aktLongClickPosition.setItem(step);
                 return false;
             });
             textView.setOnCreateContextMenuListener(this);
@@ -110,17 +111,5 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
             menu.add(Menu.NONE, MENU_DOWN, pos++, R.string.menu_down);
         }
 
-    }
-
-    public static class LongClickPosition {
-        private Step step;
-
-        public Step getStep() {
-            return step;
-        }
-
-        public void setStep(Step step) {
-            this.step = step;
-        }
     }
 }

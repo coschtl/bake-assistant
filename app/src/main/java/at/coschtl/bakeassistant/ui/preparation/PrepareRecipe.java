@@ -2,6 +2,7 @@ package at.coschtl.bakeassistant.ui.preparation;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,8 +10,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -50,6 +53,8 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
 
     private InstructionsAdapter instructionsAdapter;
     private ListView instructionsListView;
+    private View selectTime;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,11 +65,22 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
 
         instructionsListView = findViewById(R.id.instructions_listview);
         RecipeDbAdapter recipeDbAdapter = new RecipeDbAdapter();
-        InstructionCalculator calculator = new InstructionCalculator(recipeDbAdapter.getRecipe(recipeId));
+        Recipe recipe = recipeDbAdapter.getRecipe(recipeId);
+        InstructionCalculator calculator = new InstructionCalculator(recipe);
         recipeDbAdapter.close();
         instructionsAdapter = new InstructionsAdapter(this, -1, calculator, this);
         instructionsListView.setAdapter(instructionsAdapter);
+        ((TextView)findViewById(R.id.recipe)).setText(recipe.getName() + ":");
+        selectTime = findViewById(R.id.selectTime);
 
+        TextView startTime = findViewById(R.id.startTime);
+        TimeSetter startTimeSetter = new TimeSetter(selectTime, new SettableTime.TextViewSettableTime(startTime), findViewById(R.id.preparation));
+        startTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startTimeSetter.show();
+            }
+        });
     }
 
     @Override

@@ -6,13 +6,15 @@ import java.util.Date;
 import java.util.Objects;
 
 import at.coschtl.bakeassistant.model.Step;
+import at.coschtl.bakeassistant.util.Time;
 
 public class Instruction {
 
     private final String action;
-    private final DateFormat dateFormat;
-    private Date timeMin;
-    private Date timeMax;
+    private Time timeMin;
+    private Time timeMax;
+    private  Date min;
+    private  Date max;
     private boolean done;
 
     public Instruction(Step step) {
@@ -21,41 +23,46 @@ public class Instruction {
 
     public Instruction(String action) {
         this.action = action;
-        dateFormat = new SimpleDateFormat("E HH:mm");
     }
-
 
     @Override
     public String toString() {
         if (hasTimespan()) {
-            return getFormatedTimeMin() + " - " + getFormatedTimeMax() + ": " + action;
+            return getTimeMin() + " - " + getTimeMax() + ": " + action;
         }
-        return getFormatedTimeMin() + ": " + action;
+        return getTimeMin() + ": " + action;
     }
 
     public void setTimeMax(Date timeMax) {
-        this.timeMax = timeMax;
+        this.timeMax = new Time(timeMax);
+        this.max = timeMax;
     }
 
     public void setTimeMin(Date timeMin) {
-        this.timeMin = timeMin;
+        this.timeMin = new Time(timeMin);
+        this.min = timeMin;
     }
 
-    public void setExecutionTime(Date executionTime) {
-        timeMin = executionTime;
-        timeMax = executionTime;
+    public boolean setExecutionTime(int hour, int minute) {
+        Time time = Time.of(timeMin).setHour(hour).setMinute(minute);
+        if (time.date().before(min) || time.date().after(max)) {
+            return false;
+        }
+        timeMin = time;
+        timeMax = time;
+        return true;
     }
 
     public boolean hasTimespan() {
         return !Objects.equals(timeMin, timeMax);
     }
 
-    public String getFormatedTimeMax() {
-        return dateFormat.format(timeMax);
+    public Time getTimeMax() {
+        return timeMax;
     }
 
-    public String getFormatedTimeMin() {
-        return dateFormat.format(timeMin);
+    public Time getTimeMin() {
+        return timeMin;
     }
 
     public String getAction() {

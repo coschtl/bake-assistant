@@ -127,7 +127,6 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
 
         findViewById(R.id.add_step_button).setOnClickListener(this);
         findViewById(R.id.start_now_button).setOnClickListener(this);
-        findViewById(R.id.start_later_button).setOnClickListener(this);
         updateUi();
     }
 
@@ -161,8 +160,6 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
             Intent intent = new Intent(EditRecipe.this, PrepareRecipe.class);
             intent.putExtra(BakeAssistant.EXTRA_RECIPE_ID, recipe().getId());
             startActivityForResult(intent, 1);
-            System.out.println(new InstructionCalculator(recipe()).calculateInstructions(new Date()));
-        } else if (v.getId() == R.id.start_later_button) {
             System.out.println(new InstructionCalculator(recipe()).calculateInstructions(new Date()));
         }
     }
@@ -237,7 +234,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         RecipeStepsAdapter adapter = (RecipeStepsAdapter) stepsListView.getAdapter();
-        Step step = adapter.getAktLongClickPosition().getStep();
+        Step step = adapter.getAktLongClickPosition().getItem();
         int currentPos = getStepPosition(step);
         switch (item.getItemId()) {
             case RecipeStepsAdapter.ViewHolder.MENU_EDIT:

@@ -33,5 +33,6 @@
     <string name="title_edit_step">Schritt #{0} bearbeiten:</string>
     <string name="done">Fertig</string>
 
-    <string name="title_preparation">Zubereitung</string>
+    <string name="title_preparation">Zubereitung:</string>
+    <string name="label_start_time">Start-Zeit: </string>
 </resources>
