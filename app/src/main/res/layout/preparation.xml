@@ -14,11 +14,21 @@
         android:gravity="center"
         android:visibility="gone">
 
+        <Spinner
+            android:id="@+id/datePicker"
+            android:layout_width="wrap_content"
+            android:layout_height="60sp"
+            android:padding="5dp"
+            android:gravity="center"
+            android:textSize="60sp" />
+
         <TimePicker
             android:id="@+id/timePicker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/datePicker"
             android:layout_marginTop="20dp"
+            android:gravity="center"
             android:timePickerMode="clock" />
 
         <Button
@@ -34,10 +44,11 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/preparation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:id="@+id/preparation">
+        android:visibility="visible">
 
         <TextView
             android:id="@+id/recipe"
@@ -45,28 +56,6 @@
             android:layout_height="wrap_content"
             android:text="@string/title_preparation"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/startTimeLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="@string/label_start_time"
-                android:textSize="35dp" />
-
-            <TextView
-                android:id="@+id/startTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="22:00"
-                android:textSize="35dp" />
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

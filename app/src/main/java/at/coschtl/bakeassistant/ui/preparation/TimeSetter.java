@@ -1,43 +1,68 @@
 package at.coschtl.bakeassistant.ui.preparation;
 
+import android.app.Activity;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.R;
+import at.coschtl.bakeassistant.util.Day;
 
 public class TimeSetter implements View.OnClickListener {
-    private final View selectTime;
+    private final PrepareRecipe activity;
+    private final InstructionsAdapter instructionsAdapter;
+    private final LinearLayout row;
+    private final Instruction instruction;
+    private final Spinner datePicker;
     private final TimePicker timePicker;
-    private final SettableTime settableTime;
-    private final View parent;
 
-    public TimeSetter(View selectTime, SettableTime settableTime, View parent) {
-        this.selectTime = selectTime;
-        this.settableTime = settableTime;
-        this.timePicker = selectTime.findViewById(R.id.timePicker);
-        this.timePicker.setIs24HourView(true);
-        this.parent = parent;
+    public TimeSetter(PrepareRecipe activity, InstructionsAdapter instructionsAdapter, LinearLayout row, Instruction instruction) {
+        this.activity = activity;
+        this.instructionsAdapter = instructionsAdapter;
+        this.row = row;
+        this.instruction = instruction;
+
+        timePicker = activity.findViewById(R.id.timePicker);
+        timePicker.setIs24HourView(true);
+
+        ArrayAdapter<Day> days = new ArrayAdapter<>(activity, R.layout.support_simple_spinner_dropdown_item, getDays(instruction.getTimeMin().date()));
+        datePicker = activity.findViewById(R.id.datePicker);
+        datePicker.setAdapter(days);
+        datePicker.setSelection(3);
     }
 
     public void show() {
-        parent.setVisibility(View.GONE);
-        selectTime.setVisibility(View.VISIBLE);
-        timePicker.setCurrentHour(settableTime.getHour());
-        timePicker.setCurrentMinute(settableTime.getMinute());
-        Button timeOk = selectTime.findViewById(R.id.setTime);
+        activity.showTimeSelectionUi();
+        timePicker.setCurrentHour(instruction.getTimeMin().hour());
+        timePicker.setCurrentMinute(instruction.getTimeMin().minute());
+        Button timeOk = activity.findViewById(R.id.setTime);
         timeOk.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        boolean success = settableTime.setTime(timePicker.getCurrentHour(), timePicker.getCurrentMinute());
-        if (success) {
-            parent.setVisibility(View.VISIBLE);
-            selectTime.setVisibility(View.GONE);
+        if (datePicker.getVisibility() == View.VISIBLE) {
+            instruction.setExecutionTime((Day)datePicker.getSelectedItem(), timePicker.getCurrentHour(), timePicker.getCurrentMinute());
         } else {
-            Toast.makeText(parent.getContext(), "out of range", Toast.LENGTH_SHORT).show();
+            instruction.setExecutionTime(timePicker.getCurrentHour(), timePicker.getCurrentMinute());
         }
+        instructionsAdapter.notifyInstructionChanged(instruction);
+        activity.hideTimeSelectionUi();
+    }
+
+    private List<Day> getDays(Date base) {
+        List<Day> days = new ArrayList<>(11);
+        for (int i=-3; i<7; i++) {
+            days.add( Day.getDayRelativeTo(base, i));
+        }
+        return days;
     }
 }

@@ -11,6 +11,9 @@ public class Time {
     private final DateFormat dateFormat;
     private Date time;
 
+    public static Time of(Date date) {
+        return new Time(date);
+    }
     public static Time of(Time time) {
         return new Time(time.time);
     }

@@ -160,7 +160,8 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
             Intent intent = new Intent(EditRecipe.this, PrepareRecipe.class);
             intent.putExtra(BakeAssistant.EXTRA_RECIPE_ID, recipe().getId());
             startActivityForResult(intent, 1);
-            System.out.println(new InstructionCalculator(recipe()).calculateInstructions(new Date()));
+            System.out.println(new InstructionCalculator(recipe()).calculateFromEnd().getInstructions());
+            System.out.println(new InstructionCalculator(recipe()).calculateFromStart().getInstructions());
         }
     }
 

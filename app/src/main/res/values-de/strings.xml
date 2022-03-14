@@ -31,8 +31,11 @@
     <string name="menu_down">Nach unten</string>
 
     <string name="title_edit_step">Schritt #{0} bearbeiten:</string>
-    <string name="done">Fertig</string>
+    <string name="step_start">Start</string>
+    <string name="step_done">Fertig</string>
 
     <string name="title_preparation">Zubereitung:</string>
     <string name="label_start_time">Start-Zeit: </string>
+
+    <string name="label_day">Tag</string>
 </resources>

@@ -40,6 +40,7 @@ import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.model.Step;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 import at.coschtl.bakeassistant.ui.recipe.RecipeStepsAdapter;
+import at.coschtl.bakeassistant.util.Day;
 
 public class PrepareRecipe extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 
@@ -53,8 +54,7 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
 
     private InstructionsAdapter instructionsAdapter;
     private ListView instructionsListView;
-    private View selectTime;
-
+    private boolean timeSelectorVisible;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -71,16 +71,20 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
         instructionsAdapter = new InstructionsAdapter(this, -1, calculator, this);
         instructionsListView.setAdapter(instructionsAdapter);
         ((TextView)findViewById(R.id.recipe)).setText(recipe.getName() + ":");
-        selectTime = findViewById(R.id.selectTime);
+    }
 
-        TextView startTime = findViewById(R.id.startTime);
-        TimeSetter startTimeSetter = new TimeSetter(selectTime, new SettableTime.TextViewSettableTime(startTime), findViewById(R.id.preparation));
-        startTime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startTimeSetter.show();
-            }
-        });
+
+
+    public void showTimeSelectionUi() {
+        findViewById(R.id.selectTime).setVisibility(View.VISIBLE);
+        findViewById(R.id.preparation).setVisibility(View.GONE);
+        timeSelectorVisible=true;
+    }
+
+    public void hideTimeSelectionUi() {
+        findViewById(R.id.selectTime).setVisibility(View.GONE);
+        findViewById(R.id.preparation).setVisibility(View.VISIBLE);
+        timeSelectorVisible=false;
     }
 
     @Override
@@ -100,8 +104,15 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
         return false;
     }
 
-
-//    @Override
+    @Override
+    public void onBackPressed() {
+        if (timeSelectorVisible) {
+            hideTimeSelectionUi();
+        } else {
+            super.onBackPressed();
+        }
+    }
+    //    @Override
 //    public boolean onContextItemSelected(MenuItem item) {
 //        RecipeStepsAdapter adapter = (RecipeStepsAdapter) stepsListView.getAdapter();
 //        Step step = adapter.getAktLongClickPosition().getStep();

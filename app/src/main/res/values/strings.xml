@@ -30,9 +30,12 @@
     <string name="menu_down">Down</string>
 
     <string name="title_edit_step">Edit step #{0}:</string>
-    <string name="done">Done</string>
+    <string name="step_start">Start</string>
+    <string name="step_done">Done</string>
 
     <string name="title_preparation">Preparation:</string>
     <string name="label_start_time">Start-Time: </string>
+
+    <string name="label_day">Day</string>
 
 </resources>
