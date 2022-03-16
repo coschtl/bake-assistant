@@ -37,5 +37,6 @@
     <string name="label_start_time">Start-Time: </string>
 
     <string name="label_day">Day</string>
+    <string name="label_planned">planned: </string>
 
 </resources>

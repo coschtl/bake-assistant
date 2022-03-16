@@ -11,7 +11,7 @@ public class Day {
 
     public Day(Date date) {
         this.date = date;
-        dateFormat = new SimpleDateFormat("E\td.");
+        dateFormat = new SimpleDateFormat("E\td. MMMM");
     }
 
     public static Day getDayRelativeTo(Date date, int offset) {

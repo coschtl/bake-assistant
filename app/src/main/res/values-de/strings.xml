@@ -38,4 +38,5 @@
     <string name="label_start_time">Start-Zeit: </string>
 
     <string name="label_day">Tag</string>
+    <string name="label_planned">geplant: </string>
 </resources>

@@ -1,5 +1,6 @@
 package at.coschtl.bakeassistant.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +8,7 @@ import java.util.Map;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 
-public enum DurationUnit {
+public enum DurationUnit implements Serializable {
 
    MINUTES(R.string.minutes, 1),
    HOURS(R.string.hours, 60);
@@ -27,7 +28,7 @@ public enum DurationUnit {
     private final String label;
     private final long minutes;
 
-    private DurationUnit(int labelId, long minutes) {
+    DurationUnit(int labelId, long minutes) {
         this.labelId = labelId;
         label = BakeAssistant.CONTEXT.getResources().getString(labelId);
         this.minutes = minutes;

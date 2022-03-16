@@ -1,5 +1,6 @@
 package at.coschtl.bakeassistant;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,11 +11,7 @@ import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 import at.coschtl.bakeassistant.util.Day;
 import at.coschtl.bakeassistant.util.Time;
 
-public class Instruction {
-
-    public enum Type {
-        START, ACTION, END;
-    }
+public class Instruction implements Serializable {
 
     private final String action;
     private final Step step;
@@ -23,22 +20,18 @@ public class Instruction {
     private boolean done;
 
     public static Instruction getStartInstruction(Date timeMin, Date timeMax) {
-        return createInstance(timeMin, timeMax, R.string.step_start, Type.START);
+        return createInstance(timeMin, timeMax, R.string.step_start);
     }
 
     public static Instruction getEndInstruction(Date timeMin, Date timeMax) {
-        return createInstance(timeMin, timeMax, R.string.step_done, Type.END);
+        return createInstance(timeMin, timeMax, R.string.step_done);
     }
 
-    private static Instruction createInstance(Date timeMin, Date timeMax, int string, Type type) {
+    private static Instruction createInstance(Date timeMin, Date timeMax, int string) {
         Instruction instruction = new Instruction(BakeAssistant.CONTEXT.getString(string)) {
             @Override
             public boolean showInteraction() {
                 return false;
-            }
-            @Override
-            public Type getType() {
-                return type;
             }
         };
         instruction.setTimeMin(timeMin);
@@ -62,10 +55,6 @@ public class Instruction {
 
     public boolean showInteraction() {
         return true;
-    }
-
-    public Type getType() {
-        return Type.ACTION;
     }
 
     @Override
@@ -102,11 +91,15 @@ public class Instruction {
     }
 
     public void setTimeMax(Date timeMax) {
-        this.timeMax = new Time(timeMax);
+        if (!done) {
+            this.timeMax = new Time(timeMax);
+        }
     }
 
     public void setTimeMin(Date timeMin) {
-        this.timeMin = new Time(timeMin);
+        if (!done) {
+            this.timeMin = new Time(timeMin);
+        }
     }
 
     public String getAction() {

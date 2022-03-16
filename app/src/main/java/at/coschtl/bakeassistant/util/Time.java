@@ -1,12 +1,13 @@
 package at.coschtl.bakeassistant.util;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 
-public class Time {
+public class Time implements Serializable {
 
     private final DateFormat dateFormat;
     private Date time;

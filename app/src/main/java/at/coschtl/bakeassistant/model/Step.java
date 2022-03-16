@@ -1,6 +1,8 @@
 package at.coschtl.bakeassistant.model;
 
-public class Step {
+import java.io.Serializable;
+
+public class Step implements Serializable {
     private long id;
     private long recipeId;
     private Action action;

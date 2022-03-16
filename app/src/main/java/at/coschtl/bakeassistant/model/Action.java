@@ -1,6 +1,8 @@
 package at.coschtl.bakeassistant.model;
 
-public class Action {
+import java.io.Serializable;
+
+public class Action implements Serializable {
 
     private final long id;
     private final String name;

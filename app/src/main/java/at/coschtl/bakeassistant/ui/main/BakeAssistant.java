@@ -29,6 +29,7 @@ public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMen
 
     public static Context CONTEXT;
     public static final String EXTRA_RECIPE_ID = "extraRecipeId";
+    public static final String EXTRA_INSTRUCTION = "instruction";
 
     private RecipeDbAdapter recipeDbAdapter;
     private RecyclerView recipesListView;

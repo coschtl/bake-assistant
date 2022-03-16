@@ -2,7 +2,6 @@ package at.coschtl.bakeassistant;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,32 +36,18 @@ public class InstructionCalculator {
         return instructions;
     }
 
-    public InstructionCalculator calculateFromEnd() {
-        Calendar calMin = Calendar.getInstance();
-        Calendar calMax = Calendar.getInstance();
-        Date end = instructions.get(instructions.size() - 1).getTimeMin().date();
-        calMin.setTime(end);
-        calMax.setTime(end);
-        for (int i = instructions.size() - 1; i >= 0; i--) {
-            Instruction instruction = instructions.get(i);
-            instruction.setTimeMin(calMin.getTime());
-            instruction.setTimeMax(calMax.getTime());
-            Step step = instruction.getStep();
-            if (step != null) {
-                calMin.add(Calendar.MINUTE, (int) (-1 * step.getDurationMax() * step.getDurationUnit().getMinutes()));
-                calMax.add(Calendar.MINUTE, (int) (-1 * step.getDurationMin() * step.getDurationUnit().getMinutes()));
-            }
-        }
-        return this;
+    public Recipe getRecipe() {
+        return recipe;
     }
 
-    public InstructionCalculator calculateFromStart() {
+    public InstructionCalculator recalculate(int changedInstructionPosition) {
         Calendar calMin = Calendar.getInstance();
         Calendar calMax = Calendar.getInstance();
-        Date start = instructions.get(0).getTimeMin().date();
-        calMin.setTime(start);
-        calMax.setTime(start);
-        for (int i = 0; i < instructions.size(); i++) {
+        Date fixed = instructions.get(changedInstructionPosition).getTimeMin().date();
+
+        calMin.setTime(fixed);
+        calMax.setTime(fixed);
+        for (int i = changedInstructionPosition; i < instructions.size(); i++) {
             Instruction instruction = instructions.get(i);
             instruction.setTimeMin(calMin.getTime());
             instruction.setTimeMax(calMax.getTime());
@@ -70,6 +55,19 @@ public class InstructionCalculator {
             if (step != null) {
                 calMin.add(Calendar.MINUTE, (int) (step.getDurationMin() * step.getDurationUnit().getMinutes()));
                 calMax.add(Calendar.MINUTE, (int) (step.getDurationMax() * step.getDurationUnit().getMinutes()));
+            }
+        }
+
+        calMin.setTime(fixed);
+        calMax.setTime(fixed);
+        for (int i = changedInstructionPosition; i >= 0; i--) {
+            Instruction instruction = instructions.get(i);
+            instruction.setTimeMin(calMin.getTime());
+            instruction.setTimeMax(calMax.getTime());
+            Step step = instruction.getStep();
+            if (step != null) {
+                calMin.add(Calendar.MINUTE, (int) (-1 * step.getDurationMax() * step.getDurationUnit().getMinutes()));
+                calMax.add(Calendar.MINUTE, (int) (-1 * step.getDurationMin() * step.getDurationUnit().getMinutes()));
             }
         }
         return this;
