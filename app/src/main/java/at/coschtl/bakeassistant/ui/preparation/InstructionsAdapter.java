@@ -33,6 +33,10 @@ public class InstructionsAdapter extends ArrayAdapter<Instruction> {
         return instructionCalculator.getRecipe();
     }
 
+    public InstructionCalculator getInstructionCalculator() {
+        return instructionCalculator;
+    }
+
     public Instruction getActiveInstruction() {
         for (int i=1; i<getCount()-1; i++) {
             Instruction instruction = getItem(i);
@@ -56,13 +60,11 @@ public class InstructionsAdapter extends ArrayAdapter<Instruction> {
         setText(R.id.action, instruction.getAction(), row);
         CheckBox interaction = row.findViewById(R.id.done);
         interaction.setChecked(instruction.isDone());
-        interaction.setClickable(!instruction.isDone());
         interaction.setVisibility(instruction.showInteraction() ? View.VISIBLE : View.INVISIBLE);
         interaction.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 instruction.setDone(isChecked);
-                buttonView.setClickable(!isChecked);
             }
         });
     }

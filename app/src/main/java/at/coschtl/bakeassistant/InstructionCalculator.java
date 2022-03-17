@@ -1,5 +1,6 @@
 package at.coschtl.bakeassistant;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,7 +9,7 @@ import java.util.List;
 import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.model.Step;
 
-public class InstructionCalculator {
+public class InstructionCalculator implements Serializable {
     private final Recipe recipe;
     private final List<Instruction> instructions;
 

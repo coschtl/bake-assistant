@@ -38,5 +38,6 @@
 
     <string name="label_day">Day</string>
     <string name="label_planned">planned: </string>
+    <string name="instructions_scheduled">Alarm scheduled</string>
 
 </resources>

@@ -51,11 +51,7 @@ public class TimeSetter implements View.OnClickListener {
 
         Instruction instruction = instruction();
         setText(R.id.step_name, instruction().getAction(), activity);
-        StringBuilder b = new StringBuilder(instruction.getTimeMin().toString());
-        if (instruction.hasTimespan()) {
-            b.append(" - ").append(instruction.getTimeMax().toString());
-        }
-        setText(R.id.step_planned, b.toString(), activity);
+        setText(R.id.step_planned, instruction.getTimespanString(), activity);
         timePicker.setCurrentHour(instruction.getTimeMin().hour());
         timePicker.setCurrentMinute(instruction.getTimeMin().minute());
         Button timeOk = activity.findViewById(R.id.setTime);

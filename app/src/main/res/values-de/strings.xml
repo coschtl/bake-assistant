@@ -39,4 +39,5 @@
 
     <string name="label_day">Tag</string>
     <string name="label_planned">geplant: </string>
+    <string name="instructions_scheduled">Alarm eingeplant</string>
 </resources>

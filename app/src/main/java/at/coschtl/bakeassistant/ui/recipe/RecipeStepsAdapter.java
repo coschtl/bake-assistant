@@ -18,13 +18,11 @@ import at.coschtl.bakeassistant.ui.LongClickPosition;
 
 public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.ViewHolder> {
 
-    private final StepEditor stepEditor;
     private List<Step> steps;
     private final LongClickPosition<Step> aktLongClickPosition;
 
-    public RecipeStepsAdapter(List<Step> dataSet, StepEditor stepEditor) {
+    public RecipeStepsAdapter(List<Step> dataSet) {
         steps = new ArrayList<>(dataSet);
-        this.stepEditor = stepEditor;
         aktLongClickPosition = new LongClickPosition();
     }
 
@@ -50,7 +48,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.text_row, viewGroup, false);
 
-        return new ViewHolder(view, stepEditor, aktLongClickPosition);
+        return new ViewHolder(view, aktLongClickPosition);
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -83,12 +81,10 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         public static final int MENU_DOWN = MENU_UP + 1;
 
         private final TextView textView;
-        private final StepEditor stepEditor;
         private Step step;
 
-        public ViewHolder(View view, StepEditor stepEditor, LongClickPosition<Step> aktLongClickPosition) {
+        public ViewHolder(View view, LongClickPosition<Step> aktLongClickPosition) {
             super(view);
-            this.stepEditor = stepEditor;
 
             textView = view.findViewById(R.id.step_name);
             textView.setOnLongClickListener(v -> {

@@ -6,12 +6,16 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:layout_gravity="center"
+    android:background="@android:color/transparent"
     tools:context=".ui.cfg.ConfigurationActivity">
 
     <RelativeLayout
         android:id="@+id/selectTime"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:background="@color/cardview_light_background"
         android:layout_marginBottom="10dp">
 
         <TextView
@@ -21,15 +25,22 @@
             android:layout_marginBottom="10dp"
             android:text="step name"
             android:textSize="35dp" />
-
+        <TextView
+            android:id="@+id/step_timespan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_below="@+id/step_name"
+            android:text="step name"
+            android:textSize="20dp" />
 
         <Button
             android:id="@+id/done"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/step_name"
-            android:layout_centerInParent="true"
+            android:layout_below="@+id/step_timespan"
             android:layout_marginTop="10dp"
+            android:layout_centerInParent="true"
             android:text="OK"
             android:textSize="25dp" />
     </RelativeLayout>

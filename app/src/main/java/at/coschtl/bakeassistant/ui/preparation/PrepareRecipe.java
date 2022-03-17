@@ -4,11 +4,14 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,6 +19,7 @@ import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.InstructionCalculator;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.db.RecipeDbAdapter;
@@ -24,7 +28,10 @@ import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.ui.InstructionNotification;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 
-public class PrepareRecipe extends AppCompatActivity implements View.OnClickListener {
+public class PrepareRecipe extends AppCompatActivity implements AlarmStarter {
+
+    private static final String INSTANCE_STATE_CALCULATOR = "InstructionCalculator";
+    private static final String INSTANCE_STATE_POSITION = "currentInstructionPosition";
 
     private static final Map<DurationUnit, Integer> DURATION_TO_POS;
 
@@ -37,6 +44,8 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
     private InstructionsAdapter instructionsAdapter;
     private ListView instructionsListView;
     private boolean timeSelectorVisible;
+    private int currentInstructionPosition;
+    private   InstructionFinishedReceiver instructionFinishedReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,7 +62,18 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
         instructionsAdapter = new InstructionsAdapter(this, -1, calculator);
         instructionsListView.setAdapter(instructionsAdapter);
         ((TextView) findViewById(R.id.recipe)).setText(recipe.getName() + ":");
-        findViewById(R.id.start_now_button).setOnClickListener(this);
+
+        instructionFinishedReceiver = new InstructionFinishedReceiver(this);
+        BakeAssistant.CONTEXT.registerReceiver(instructionFinishedReceiver, new IntentFilter(InstructionNotification.class.getName()));
+
+        Toast.makeText(this, R.string.instructions_scheduled, Toast.LENGTH_LONG).show();
+        startNextAlarm();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BakeAssistant.CONTEXT.unregisterReceiver(instructionFinishedReceiver);
     }
 
     public void showTimeSelectionUi() {
@@ -78,19 +98,48 @@ public class PrepareRecipe extends AppCompatActivity implements View.OnClickList
     }
 
     @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.start_now_button) {
-            AlarmManager alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, InstructionNotification.class);
-            intent.putExtra(BakeAssistant.EXTRA_RECIPE_ID, instructionsAdapter.getRecipe().getId());
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.SECOND, 5);
-            alarmMgr.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
-
-            System.out.println("STARTED");
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        InstructionCalculator calculator = (InstructionCalculator) savedInstanceState.get(INSTANCE_STATE_CALCULATOR);
+        if (calculator != null) {
+            instructionsAdapter = new InstructionsAdapter(this, -1, calculator);
+            instructionsListView.setAdapter(instructionsAdapter);
+            currentInstructionPosition = savedInstanceState.getInt(INSTANCE_STATE_POSITION);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        System.out.println("onSaveInstanceState");
+        outState.putSerializable(INSTANCE_STATE_CALCULATOR, instructionsAdapter.getInstructionCalculator());
+        outState.putInt(INSTANCE_STATE_POSITION, currentInstructionPosition);
+    }
+
+    public void startNextAlarm() {
+        instructionsAdapter.getItem(currentInstructionPosition).setDone(true);
+        instructionsAdapter.notifyDataSetChanged();
+        currentInstructionPosition++;
+        if (currentInstructionPosition >= instructionsAdapter.getCount()-1) {
+            return;
+        }
+
+        System.out.println("startNextAlarm: " + currentInstructionPosition);
+
+        AlarmManager alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, InstructionNotification.class);
+        Instruction instruction = instructionsAdapter.getItem(currentInstructionPosition);
+        System.out.println("next step is: " + instruction.getAction());
+        intent.putExtra(InstructionNotification.EXTRA_INSTRUCTION, instruction);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+
+//        Calendar cal = Calendar.getInstance();
+//        cal.add(Calendar.SECOND, 5);
+//        alarmMgr.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, instruction.getTimeMin().date().getTime(), pendingIntent);
+
+        System.out.println("alarm scheduled");
+
     }
 
 }

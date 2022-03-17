@@ -82,6 +82,14 @@ public class Instruction implements Serializable {
         return !Objects.equals(timeMin, timeMax);
     }
 
+    public String getTimespanString() {
+        StringBuilder b = new StringBuilder(getTimeMin().toString());
+        if (hasTimespan()) {
+            b.append(" - ").append(getTimeMax().toString());
+        }
+        return b.toString();
+    }
+
     public Time getTimeMax() {
         return timeMax;
     }

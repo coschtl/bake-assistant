@@ -92,7 +92,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
 
         noStepsTextView = findViewById(R.id.steps_no_recipes);
         stepsListView = findViewById(R.id.steps_listview);
-        RecipeStepsAdapter adapter = new RecipeStepsAdapter( recipe().getSteps(), this::showStepPopup);
+        RecipeStepsAdapter adapter = new RecipeStepsAdapter( recipe().getSteps());
         stepsListView.setAdapter(adapter);
         stepsListView.setLayoutManager(new LinearLayoutManager(this));
         ItemTouchHelper itemTouchHelper = new
