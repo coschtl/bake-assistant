@@ -15,7 +15,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -27,6 +26,7 @@ import at.coschtl.bakeassistant.model.DurationUnit;
 import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.ui.InstructionNotification;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
+import at.coschtl.bakeassistant.util.SerializationUtil;
 
 public class PrepareRecipe extends AppCompatActivity implements AlarmStarter {
 
@@ -45,14 +45,20 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter {
     private ListView instructionsListView;
     private boolean timeSelectorVisible;
     private int currentInstructionPosition;
-    private   InstructionFinishedReceiver instructionFinishedReceiver;
+    private InstructionFinishedReceiver instructionFinishedReceiver;
+    private int backCount;
+    private PendingIntent pendingIntent;
+    private AlarmManager alarmManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        backCount = 0;
+        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
         setContentView(R.layout.preparation);
         Bundle extras = getIntent().getExtras();
-        long recipeId = extras.getLong(BakeAssistant.EXTRA_RECIPE_ID);
+        long recipeId = extras.getLong(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID);
 
         instructionsListView = findViewById(R.id.instructions_listview);
         RecipeDbAdapter recipeDbAdapter = new RecipeDbAdapter();
@@ -74,6 +80,9 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter {
     protected void onDestroy() {
         super.onDestroy();
         BakeAssistant.CONTEXT.unregisterReceiver(instructionFinishedReceiver);
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent);
+        }
     }
 
     public void showTimeSelectionUi() {
@@ -93,18 +102,22 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter {
         if (timeSelectorVisible) {
             hideTimeSelectionUi();
         } else {
-            super.onBackPressed();
+            if (backCount++ == 0) {
+                Toast.makeText(this, R.string.back_will_abort, Toast.LENGTH_LONG).show();
+            } else {
+                super.onBackPressed();
+            }
         }
     }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        InstructionCalculator calculator = (InstructionCalculator) savedInstanceState.get(INSTANCE_STATE_CALCULATOR);
+        InstructionCalculator calculator = (InstructionCalculator) savedInstanceState.get(BakeAssistant.PKG_PREF + INSTANCE_STATE_CALCULATOR);
         if (calculator != null) {
             instructionsAdapter = new InstructionsAdapter(this, -1, calculator);
             instructionsListView.setAdapter(instructionsAdapter);
-            currentInstructionPosition = savedInstanceState.getInt(INSTANCE_STATE_POSITION);
+            currentInstructionPosition = savedInstanceState.getInt(BakeAssistant.PKG_PREF + INSTANCE_STATE_POSITION);
         }
     }
 
@@ -112,31 +125,34 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         System.out.println("onSaveInstanceState");
-        outState.putSerializable(INSTANCE_STATE_CALCULATOR, instructionsAdapter.getInstructionCalculator());
-        outState.putInt(INSTANCE_STATE_POSITION, currentInstructionPosition);
+        outState.putSerializable(BakeAssistant.PKG_PREF + INSTANCE_STATE_CALCULATOR, instructionsAdapter.getInstructionCalculator());
+        outState.putInt(BakeAssistant.PKG_PREF + INSTANCE_STATE_POSITION, currentInstructionPosition);
     }
 
     public void startNextAlarm() {
-        instructionsAdapter.getItem(currentInstructionPosition).setDone(true);
-        instructionsAdapter.notifyDataSetChanged();
-        currentInstructionPosition++;
-        if (currentInstructionPosition >= instructionsAdapter.getCount()-1) {
+        //handle last instruction
+        if (currentInstructionPosition > 0) {
+            Instruction lastInstruction =  instructionsAdapter.getItem(currentInstructionPosition-1);
+            lastInstruction.setActive(false);
+            lastInstruction.setDone(true);
+        }
+        Instruction currentInstruction =  instructionsAdapter.getItem(currentInstructionPosition);
+        currentInstruction.setActive(true);
+        if (currentInstructionPosition >= instructionsAdapter.getCount()) {
             return;
         }
+        Instruction nextInstruction =  instructionsAdapter.getItem(++currentInstructionPosition);
+        instructionsAdapter.notifyDataSetChanged();
 
         System.out.println("startNextAlarm: " + currentInstructionPosition);
 
-        AlarmManager alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, InstructionNotification.class);
-        Instruction instruction = instructionsAdapter.getItem(currentInstructionPosition);
-        System.out.println("next step is: " + instruction.getAction());
-        intent.putExtra(InstructionNotification.EXTRA_INSTRUCTION, instruction);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
-//        Calendar cal = Calendar.getInstance();
-//        cal.add(Calendar.SECOND, 5);
-//        alarmMgr.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, instruction.getTimeMin().date().getTime(), pendingIntent);
+        System.out.println("current step is: " + currentInstruction.getAction() + ", next step is: " + nextInstruction.getAction());
+        intent.putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_INSTRUCTION, SerializationUtil.serialize(nextInstruction));
+
+        pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, nextInstruction.getTimeMin().date().getTime(), pendingIntent);
 
         System.out.println("alarm scheduled");
 

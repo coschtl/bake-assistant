@@ -3,26 +3,22 @@ package at.coschtl.bakeassistant.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public class Recipe implements Serializable {
 
-    private final long  id;
-    private String name;
+    private final long id;
     private final List<Step> steps;
+    private String name;
 
     public Recipe(String name) {
-        this(-1,name);
+        this(-1, name);
     }
+
     public Recipe(long id, String name) {
         this.id = id;
         this.name = name;
         this.steps = new ArrayList<>();
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public long getId() {
@@ -31,6 +27,10 @@ public class Recipe implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<Step> getSteps() {

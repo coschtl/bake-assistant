@@ -3,6 +3,7 @@ package at.coschtl.bakeassistant.ui.preparation;
 import static at.coschtl.bakeassistant.util.UiUtil.setText;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,7 @@ public class InstructionsAdapter extends ArrayAdapter<Instruction> {
     }
 
     public Instruction getActiveInstruction() {
-        for (int i=1; i<getCount()-1; i++) {
+        for (int i = 1; i < getCount() - 1; i++) {
             Instruction instruction = getItem(i);
             if (!instruction.isDone()) {
                 return instruction;
@@ -56,8 +57,12 @@ public class InstructionsAdapter extends ArrayAdapter<Instruction> {
             row.findViewById(R.id.spacer).setVisibility(View.INVISIBLE);
             setText(R.id.time_max, "", row);
         }
+        row.findViewById(R.id.alarm).setVisibility(instruction.hasAlarm() ? View.VISIBLE : View.INVISIBLE);
         setText(R.id.time_max, instruction.hasTimespan() ? instruction.getTimeMax().toString() : "", row);
-        setText(R.id.action, instruction.getAction(), row);
+        TextView actionView = setText(R.id.action, instruction.getAction(), row);
+        if (instruction.isActive()) {
+            actionView.setTextColor(Color.RED);
+        }
         CheckBox interaction = row.findViewById(R.id.done);
         interaction.setChecked(instruction.isDone());
         interaction.setVisibility(instruction.showInteraction() ? View.VISIBLE : View.INVISIBLE);

@@ -159,6 +159,7 @@ public class RecipeDbAdapter extends AbstractDbAdapter implements AutoCloseable 
         cvs.put(DB_STEPS.COL_ACTION_ID, step.getAction().getId());
         cvs.put(DB_STEPS.COL_DURATION_MIN, step.getDurationMin());
         cvs.put(DB_STEPS.COL_DURATION_MAX, step.getDurationMax());
+        cvs.put(DB_STEPS.COL_ALARM, step.isAlarm() ? 1 : 0);
         cvs.put(DB_STEPS.COL_DURATION_UNIT, step.getDurationUnit().name());
         return cvs;
     }
@@ -181,6 +182,7 @@ public class RecipeDbAdapter extends AbstractDbAdapter implements AutoCloseable 
                 step.setId(cursor.getInt(DB_STEPS.COL_MAPPING.get(DB_STEPS.COL_STEP_ID)));
                 step.setDurationMin(cursor.getInt(DB_STEPS.COL_MAPPING.get(DB_STEPS.COL_DURATION_MIN)));
                 step.setDurationMax(cursor.getInt(DB_STEPS.COL_MAPPING.get(DB_STEPS.COL_DURATION_MAX)));
+                step.setAlarm(cursor.getInt(DB_STEPS.COL_MAPPING.get(DB_STEPS.COL_ALARM)) == 1);
                 String unitString = cursor.getString(DB_STEPS.COL_MAPPING.get(DB_STEPS.COL_DURATION_UNIT));
                 if (unitString != null) {
                     step.setDurationUnit(DurationUnit.valueOf(unitString));
@@ -235,14 +237,16 @@ public class RecipeDbAdapter extends AbstractDbAdapter implements AutoCloseable 
         public static final String COL_DURATION_MIN = "durationMin";
         public static final String COL_DURATION_MAX = "durationMax";
         public static final String COL_DURATION_UNIT = "durationUnit";
+        public static final String COL_ALARM = "alarm";
 
         public static final String DATABASE_TABLE = "recipeSteps";
         public static final String DATABASE_CREATE = "create table " + DATABASE_TABLE + " (" + COL_RECIPE_ID + " integer not null, " + COL_STEP_ID + " integer not null, "
-                + COL_ACTION_ID + " integer not null, " + COL_DURATION_MIN + " integer not null, " + COL_DURATION_MAX + " integer not null, " + COL_DURATION_UNIT + " text not null);";
+                + COL_ACTION_ID + " integer not null, " + COL_DURATION_MIN + " integer not null, " + COL_DURATION_MAX + " integer not null, " + COL_DURATION_UNIT + " text not null, "
+                + COL_ALARM + " integer default 0);";
 
         public static final String DATABASE_CREATE_INDEX = "create index if not exists INDEX_RECIPE_STEPS on " + DATABASE_TABLE + " (" + COL_RECIPE_ID + ", " + COL_STEP_ID + ")";
 
-        private static final String[] COL_NAMES = new String[]{COL_RECIPE_ID, COL_STEP_ID, COL_ACTION_ID, COL_DURATION_MIN, COL_DURATION_MAX, COL_DURATION_UNIT};
+        private static final String[] COL_NAMES = new String[]{COL_RECIPE_ID, COL_STEP_ID, COL_ACTION_ID, COL_DURATION_MIN, COL_DURATION_MAX, COL_DURATION_UNIT, COL_ALARM};
         private static final Map<String, Integer> COL_MAPPING = createColMapping(COL_NAMES);
     }
 

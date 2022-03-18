@@ -8,7 +8,7 @@ import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "bakeassistant";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
 
     public static final DatabaseHelper INSTANCE = new DatabaseHelper();
 
@@ -43,6 +43,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        if (oldVersion == 1) {
+            db.execSQL("ALTER TABLE " + RecipeDbAdapter.DB_STEPS.DATABASE_TABLE + " ADD " + RecipeDbAdapter.DB_STEPS.COL_ALARM + " integer default 0");
+        }
     }
 }

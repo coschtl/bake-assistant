@@ -16,11 +16,11 @@ import at.coschtl.bakeassistant.model.Recipe;
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> {
 
     private List<Recipe> recipes;
-    private RecipeEditor recipeEditor;
+    private final RecipeEditor recipeEditor;
 
     public RecipeAdapter(List<Recipe> dataSet, RecipeEditor recipeEditor) {
         recipes = new ArrayList<>(dataSet);
-        this.recipeEditor=recipeEditor;
+        this.recipeEditor = recipeEditor;
     }
 
     public void deleteRecipe(int position) {
@@ -38,7 +38,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.text_row, viewGroup, false);
+                .inflate(R.layout.recipes_row, viewGroup, false);
 
         return new ViewHolder(view, recipeEditor);
     }
@@ -71,12 +71,12 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         public ViewHolder(View view, RecipeEditor recipeEditor) {
             super(view);
 
-            textView = (TextView) view.findViewById(R.id.step_name);
+            textView = view.findViewById(R.id.step_name);
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (recipe != null) {
-                        recipeEditor.edit( recipe.getId());
+                        recipeEditor.edit(recipe.getId());
                     }
                 }
             });

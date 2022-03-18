@@ -27,10 +27,12 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:selectAllOnFocus="true" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=" - "/>
+                android:text=" - " />
+
             <EditText
                 android:id="@+id/durationMax"
                 style="@style/Widget.AppCompat.EditText"
@@ -38,12 +40,33 @@
                 android:layout_height="wrap_content"
                 android:inputType="number"
                 android:selectAllOnFocus="true" />
+
             <Spinner
                 android:id="@+id/time_unit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@android:drawable/btn_dropdown"
-                android:spinnerMode="dropdown"/>
+                android:spinnerMode="dropdown" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/alarm"
+                android:layout_width="25dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="10dp" />
+
+            <TextView
+                android:id="@+id/alarm_label"
+                style="@style/Widget.AppCompat.EditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:text="@string/start_with_alarm" />
         </LinearLayout>
 
     </com.google.android.material.textfield.TextInputLayout>

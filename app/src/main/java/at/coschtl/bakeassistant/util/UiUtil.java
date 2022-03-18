@@ -5,11 +5,15 @@ import android.view.View;
 import android.widget.TextView;
 
 public class UiUtil {
-    public static void setText(int id, String text, View parent) {
-        ((TextView) parent.findViewById(id)).setText(text);
+    public static TextView setText(int id, String text, View parent) {
+        TextView textView = parent.findViewById(id);
+        textView.setText(text);
+        return textView;
     }
 
-    public static void setText(int id, String text, Activity activity) {
-        ((TextView) activity.findViewById(id)).setText(text);
+    public static TextView setText(int id, String text, Activity activity) {
+        TextView textView = activity.findViewById(id);
+        textView.setText(text);
+        return textView;
     }
 }

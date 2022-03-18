@@ -4,11 +4,7 @@ import android.content.ContentValues;
 
 public interface TypeConverter<T> {
 
-    T convert(String value);
-    String convertToString(T value);
-    void setValue(ContentValues cv,String key, T value);
-
-    public TypeConverter<String> STRING = new TypeConverter<String>() {
+    TypeConverter<String> STRING = new TypeConverter<String>() {
         @Override
         public String convert(String value) {
             return value;
@@ -24,8 +20,7 @@ public interface TypeConverter<T> {
             cv.put(key, value);
         }
     };
-
-    public TypeConverter<Integer> INTEGER = new TypeConverter<Integer>() {
+    TypeConverter<Integer> INTEGER = new TypeConverter<Integer>() {
         @Override
         public Integer convert(String value) {
             return Integer.valueOf(value);
@@ -42,6 +37,11 @@ public interface TypeConverter<T> {
         }
     };
 
+    T convert(String value);
+
+    String convertToString(T value);
+
+    void setValue(ContentValues cv, String key, T value);
 
 
 }

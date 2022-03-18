@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -25,12 +26,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import at.coschtl.bakeassistant.InstructionCalculator;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.model.Action;
 import at.coschtl.bakeassistant.model.DurationUnit;
@@ -58,7 +57,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_recipe);
         Bundle extras = getIntent().getExtras();
-        long recipeId = extras.getLong(BakeAssistant.EXTRA_RECIPE_ID);
+        long recipeId = extras.getLong(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID);
         final EditText title = findViewById(R.id.recipe);
         dataAdapter = new RecipeDataAdapter(recipeId);
         if (recipeId >= 0) {
@@ -92,7 +91,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
 
         noStepsTextView = findViewById(R.id.steps_no_recipes);
         stepsListView = findViewById(R.id.steps_listview);
-        RecipeStepsAdapter adapter = new RecipeStepsAdapter( recipe().getSteps());
+        RecipeStepsAdapter adapter = new RecipeStepsAdapter(recipe().getSteps());
         stepsListView.setAdapter(adapter);
         stepsListView.setLayoutManager(new LinearLayoutManager(this));
         ItemTouchHelper itemTouchHelper = new
@@ -100,20 +99,20 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
 
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-               return false;
+                return false;
             }
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int adapterPosition =  viewHolder.getAdapterPosition();
+                int adapterPosition = viewHolder.getAdapterPosition();
                 adapter.deleteStep(adapterPosition);
                 recipe().getSteps().remove(adapterPosition);
-                System.out.println("SWIPED: " + (direction == ItemTouchHelper.LEFT ? "left" : (direction == ItemTouchHelper.RIGHT ? "right" : "unknown: "+direction)));
+                System.out.println("SWIPED: " + (direction == ItemTouchHelper.LEFT ? "left" : (direction == ItemTouchHelper.RIGHT ? "right" : "unknown: " + direction)));
             }
         });
         itemTouchHelper.attachToRecyclerView(stepsListView);
 
-        SwipeRefreshLayout swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swiperefresh);
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -157,8 +156,9 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
         if (v.getId() == R.id.add_step_button) {
             showStepPopup(BakeAssistant.CONTEXT.getResources().getString(R.string.new_step), null);
         } else if (v.getId() == R.id.start_now_button) {
+            dataAdapter.saveRecipe();
             Intent intent = new Intent(EditRecipe.this, PrepareRecipe.class);
-            intent.putExtra(BakeAssistant.EXTRA_RECIPE_ID, recipe().getId());
+            intent.putExtra(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID, recipe().getId());
             startActivityForResult(intent, 1);
         }
     }
@@ -183,6 +183,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
 
         final EditText durationMin = viewInflated.findViewById(R.id.durationMin);
         final EditText durationMax = viewInflated.findViewById(R.id.durationMax);
+        final CheckBox alarm = viewInflated.findViewById(R.id.alarm);
         builder.setView(viewInflated);
 
         if (step != null) {
@@ -190,6 +191,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
             durationMin.setText(Integer.toString(step.getDurationMin()));
             durationMax.setText(Integer.toString(step.getDurationMax()));
             timeUnit.setSelection(adapter.getPosition(step.getDurationUnit()));
+            alarm.setChecked(step.isAlarm());
         }
 
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -212,12 +214,12 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
                         durationMaxTime = durationMinTime;
                     }
                     stepToSave.setDurationMax(durationMaxTime);
+                    stepToSave.setAlarm(alarm.isChecked());
                     stepToSave.setDurationUnit(DurationUnit.byLabel(timeUnit.getSelectedItem().toString()));
                     dialog.dismiss();
                     updateUi();
                 } catch (Exception e) {
                     // do not close dialog
-                    System.out.println("no int");
                 }
             }
         });
@@ -237,27 +239,27 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
         int currentPos = getStepPosition(step);
         switch (item.getItemId()) {
             case RecipeStepsAdapter.ViewHolder.MENU_EDIT:
-                String title = MessageFormat.format(getString(R.string.title_edit_step), currentPos+1);
-                showStepPopup(title,step);
+                String title = MessageFormat.format(getString(R.string.title_edit_step), currentPos + 1);
+                showStepPopup(title, step);
                 break;
             case RecipeStepsAdapter.ViewHolder.MENU_UP:
                 if (currentPos > 0) {
-                    move(currentPos, currentPos-1);
+                    move(currentPos, currentPos - 1);
                 }
                 break;
             case RecipeStepsAdapter.ViewHolder.MENU_DOWN:
-                if (currentPos < adapter.getItemCount()-1) {
-                    move(currentPos, currentPos+1);
+                if (currentPos < adapter.getItemCount() - 1) {
+                    move(currentPos, currentPos + 1);
                 }
                 break;
         }
-        System.out.println("action: " + item.getItemId() + " - pos: " +  ((RecipeStepsAdapter) stepsListView.getAdapter()).getAktLongClickPosition());
+        System.out.println("action: " + item.getItemId() + " - pos: " + ((RecipeStepsAdapter) stepsListView.getAdapter()).getAktLongClickPosition());
         return super.onContextItemSelected(item);
     }
 
     private int getStepPosition(Step step) {
         List<Step> steps = recipe().getSteps();
-        for (int i=0; i<steps.size(); i++) {
+        for (int i = 0; i < steps.size(); i++) {
             if (steps.get(i).equals(step)) {
                 return i;
             }

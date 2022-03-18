@@ -35,9 +35,13 @@
 
     <string name="title_preparation">Preparation:</string>
     <string name="label_start_time">Start-Time: </string>
+    <string name="ok">Done</string>
+    <string name="sleep">Sleep 3 min</string>
 
     <string name="label_day">Day</string>
     <string name="label_planned">planned: </string>
     <string name="instructions_scheduled">Alarm scheduled</string>
+    <string name="back_will_abort">CAUTION: Another \'back\' will abort the preparation and all alarms!</string>
+    <string name="start_with_alarm">start with alarm</string>
 
 </resources>

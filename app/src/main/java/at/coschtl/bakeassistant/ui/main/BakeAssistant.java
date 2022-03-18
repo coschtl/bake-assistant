@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.db.RecipeDbAdapter;
@@ -25,12 +26,13 @@ import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.ui.cfg.ConfigurationActivity;
 import at.coschtl.bakeassistant.ui.recipe.EditRecipe;
 
-public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMenuItemClickListener {
+public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
 
-    public static Context CONTEXT;
     public static final String EXTRA_RECIPE_ID = "extraRecipeId";
-    public static final String EXTRA_INSTRUCTION = "instruction";
-
+    public static Context CONTEXT;
+    public static String PKG;
+    public static String PKG_PREF;
+    public static Random RANDOM;
     private RecipeDbAdapter recipeDbAdapter;
     private RecyclerView recipesListView;
     private TextView noRecipesTextView;
@@ -41,6 +43,9 @@ public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMen
         super.onCreate(savedInstanceState);
         if (CONTEXT == null) {
             CONTEXT = getApplicationContext();
+            PKG = getApplicationContext().getPackageName();
+            PKG_PREF = PKG + ".";
+            RANDOM = new Random();
         }
         setContentView(R.layout.bake_assistant);
         recipeDbAdapter = new RecipeDbAdapter();
@@ -49,7 +54,7 @@ public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMen
         noRecipesTextView = findViewById(R.id.recipes_no_recipes);
         recipesListView = findViewById(R.id.recipes_listview);
 
-        RecipeAdapter adapter = new RecipeAdapter( recipes, this::edit);
+        RecipeAdapter adapter = new RecipeAdapter(recipes, this::edit);
         recipesListView.setAdapter(adapter);
         recipesListView.setLayoutManager(new LinearLayoutManager(this));
         ItemTouchHelper itemTouchHelper = new
@@ -75,7 +80,7 @@ public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMen
             public void onClick(View v) {
                 closeDb();
                 Intent intent = new Intent(BakeAssistant.this, EditRecipe.class);
-                intent.putExtra(EXTRA_RECIPE_ID, -1L);
+                intent.putExtra(PKG_PREF + EXTRA_RECIPE_ID, -1L);
                 startActivityForResult(intent, 1);
             }
         });
@@ -84,7 +89,7 @@ public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMen
 
     public void edit(long recipeId) {
         Intent intent = new Intent(BakeAssistant.this, EditRecipe.class);
-        intent.putExtra(BakeAssistant.EXTRA_RECIPE_ID, recipeId);
+        intent.putExtra(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID, recipeId);
         startActivityForResult(intent, 1);
     }
 
@@ -97,7 +102,7 @@ public class BakeAssistant extends AppCompatActivity implements  PopupMenu.OnMen
         } else {
             noRecipesTextView.setVisibility(View.GONE);
             recipesListView.setVisibility(View.VISIBLE);
-            ((RecipeAdapter)recipesListView.getAdapter()).setData(recipes);
+            ((RecipeAdapter) recipesListView.getAdapter()).setData(recipes);
         }
     }
 

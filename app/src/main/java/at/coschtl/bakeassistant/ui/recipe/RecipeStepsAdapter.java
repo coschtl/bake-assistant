@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,8 +19,8 @@ import at.coschtl.bakeassistant.ui.LongClickPosition;
 
 public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.ViewHolder> {
 
-    private List<Step> steps;
     private final LongClickPosition<Step> aktLongClickPosition;
+    private List<Step> steps;
 
     public RecipeStepsAdapter(List<Step> dataSet) {
         steps = new ArrayList<>(dataSet);
@@ -46,7 +47,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.text_row, viewGroup, false);
+                .inflate(R.layout.steps_row, viewGroup, false);
 
         return new ViewHolder(view, aktLongClickPosition);
     }
@@ -81,12 +82,14 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         public static final int MENU_DOWN = MENU_UP + 1;
 
         private final TextView textView;
+        private final ImageView alarmImage;
         private Step step;
 
         public ViewHolder(View view, LongClickPosition<Step> aktLongClickPosition) {
             super(view);
 
             textView = view.findViewById(R.id.step_name);
+            alarmImage = view.findViewById(R.id.alarm);
             textView.setOnLongClickListener(v -> {
                 aktLongClickPosition.setItem(step);
                 return false;
@@ -97,6 +100,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         public void setStep(Step step) {
             this.step = step;
             textView.setText(step.toString());
+            alarmImage.setVisibility(step.isAlarm() ? View.VISIBLE : View.GONE);
         }
 
         @Override

@@ -10,8 +10,8 @@ public class Configuration {
     private static final String PROP_WEIGHT_IN = "weigh_in";
     private static final String PROP_MIXING = "mixing";
     private static final String PROP_FORMING = "forming";
-    public static String[] PROPERTY_NAMES;
     private static final Configuration INSTANCE;
+    public static String[] PROPERTY_NAMES;
 
     static {
         PROPERTY_NAMES = new String[]{PROP_WEIGHT_IN, PROP_MIXING, PROP_FORMING};

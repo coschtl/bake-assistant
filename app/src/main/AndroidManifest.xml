@@ -4,22 +4,22 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/baking_round"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 <!--        android:theme="@style/Theme.BakeAssistant">-->
-        <activity android:name=".ui.main.BakeAssistant">
+        <activity android:name=".ui.main.BakeAssistant" android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.cfg.ConfigurationActivity"></activity>
-        <activity android:name=".ui.recipe.EditRecipe"></activity>
-        <activity android:name=".ui.preparation.PrepareRecipe"></activity>
-        <activity android:name=".ui.InstructionNotification"></activity>
+        <activity android:name=".ui.cfg.ConfigurationActivity" android:screenOrientation="portrait" ></activity>
+        <activity android:name=".ui.recipe.EditRecipe" android:screenOrientation="portrait" ></activity>
+        <activity android:name=".ui.preparation.PrepareRecipe" android:screenOrientation="portrait" ></activity>
+        <activity android:name=".ui.InstructionNotification" android:screenOrientation="portrait" ></activity>
 
     </application>
 

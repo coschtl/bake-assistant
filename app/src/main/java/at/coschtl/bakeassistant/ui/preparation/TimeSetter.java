@@ -2,7 +2,6 @@ package at.coschtl.bakeassistant.ui.preparation;
 
 import static at.coschtl.bakeassistant.util.UiUtil.setText;
 
-import android.app.Activity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -61,7 +60,7 @@ public class TimeSetter implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (datePicker.getVisibility() == View.VISIBLE) {
-            instruction().setExecutionTime((Day)datePicker.getSelectedItem(), timePicker.getCurrentHour(), timePicker.getCurrentMinute());
+            instruction().setExecutionTime((Day) datePicker.getSelectedItem(), timePicker.getCurrentHour(), timePicker.getCurrentMinute());
         } else {
             instruction().setExecutionTime(timePicker.getCurrentHour(), timePicker.getCurrentMinute());
         }
@@ -71,8 +70,8 @@ public class TimeSetter implements View.OnClickListener {
 
     private List<Day> getDays(Date base) {
         List<Day> days = new ArrayList<>(11);
-        for (int i=-3; i<7; i++) {
-            days.add( Day.getDayRelativeTo(base, i));
+        for (int i = -3; i < 7; i++) {
+            days.add(Day.getDayRelativeTo(base, i));
         }
         return days;
     }

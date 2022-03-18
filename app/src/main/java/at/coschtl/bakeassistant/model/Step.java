@@ -9,23 +9,29 @@ public class Step implements Serializable {
     private int durationMin;
     private int durationMax;
     private DurationUnit durationUnit;
+    private boolean alarm;
 
 
     public Step(long recipeId) {
         this.recipeId = recipeId;
     }
 
-    public Step setId(long id) {
-        this.id = id;
-        return  this;
-    }
-
     public long getId() {
         return id;
     }
 
+    public Step setId(long id) {
+        this.id = id;
+        return this;
+    }
+
     public long getRecipeId() {
         return recipeId;
+    }
+
+    public Step setRecipeId(long recipeId) {
+        this.recipeId = recipeId;
+        return this;
     }
 
     public Action getAction() {
@@ -37,8 +43,12 @@ public class Step implements Serializable {
         return this;
     }
 
-    public Step setRecipeId(long recipeId) {
-        this.recipeId = recipeId;
+    public boolean isAlarm() {
+        return alarm;
+    }
+
+    public Step setAlarm(boolean alarm) {
+        this.alarm = alarm;
         return this;
     }
 
@@ -50,6 +60,7 @@ public class Step implements Serializable {
         this.durationMin = durationMin;
         return this;
     }
+
     public int getDurationMax() {
         return durationMax;
     }
@@ -70,6 +81,6 @@ public class Step implements Serializable {
 
     @Override
     public String toString() {
-        return action.getName() + ": " + durationMin + " - " + durationMax +" " + durationUnit;
+        return action.getName() + ": " + durationMin + " - " + durationMax + " " + durationUnit;
     }
 }

@@ -12,16 +12,17 @@ public class Time implements Serializable {
     private final DateFormat dateFormat;
     private Date time;
 
-    public static Time of(Date date) {
-        return new Time(date);
-    }
-    public static Time of(Time time) {
-        return new Time(time.time);
-    }
-
     public Time(Date time) {
         this.time = time;
         dateFormat = new SimpleDateFormat("E HH:mm");
+    }
+
+    public static Time of(Date date) {
+        return new Time(date);
+    }
+
+    public static Time of(Time time) {
+        return new Time(time.time);
     }
 
     public int minute() {

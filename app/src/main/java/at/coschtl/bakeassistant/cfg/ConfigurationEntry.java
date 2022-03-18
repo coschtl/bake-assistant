@@ -2,16 +2,15 @@ package at.coschtl.bakeassistant.cfg;
 
 import android.content.ContentValues;
 
-public class ConfigurationEntry <T>{
+public class ConfigurationEntry<T> {
     private final String propertyName;
     private final TypeConverter<T> typeConverter;
-
+    private T value;
+    private String unit;
     public ConfigurationEntry(String propertyName, TypeConverter<T> typeConverter) {
         this.propertyName = propertyName;
         this.typeConverter = typeConverter;
     }
-    private T value;
-    private String unit;
 
     public void setValue(ContentValues cv, String key) {
         typeConverter.setValue(cv, key, value);
@@ -25,12 +24,12 @@ public class ConfigurationEntry <T>{
         return value;
     }
 
-    public String getValueAsString() {
-        return typeConverter.convertToString(value);
-    }
-
     public void setValue(String value) {
         this.value = typeConverter.convert(value);
+    }
+
+    public String getValueAsString() {
+        return typeConverter.convertToString(value);
     }
 
     public String getUnit() {

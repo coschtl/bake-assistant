@@ -36,8 +36,12 @@
 
     <string name="title_preparation">Zubereitung:</string>
     <string name="label_start_time">Start-Zeit: </string>
+    <string name="ok">OK</string>
+    <string name="sleep">3 min Pause</string>
 
     <string name="label_day">Tag</string>
     <string name="label_planned">geplant: </string>
     <string name="instructions_scheduled">Alarm eingeplant</string>
+    <string name="back_will_abort">ACHTUNG: Ein nochmaliges \'Zurück\' bricht die Zubereitung und alle Alarme ab!</string>
+    <string name="start_with_alarm">Mit Alarm starten</string>
 </resources>

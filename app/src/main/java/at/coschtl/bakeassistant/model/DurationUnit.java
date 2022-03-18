@@ -1,7 +1,6 @@
 package at.coschtl.bakeassistant.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,33 +9,34 @@ import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 
 public enum DurationUnit implements Serializable {
 
-   MINUTES(R.string.minutes, 1),
-   HOURS(R.string.hours, 60);
+    MINUTES(R.string.minutes, 1),
+    HOURS(R.string.hours, 60);
 
-   private static Map<String, DurationUnit> BY_LABEL;
-   static {
-       BY_LABEL = new HashMap<>();
-       for (DurationUnit unit : DurationUnit.values()) {
-           BY_LABEL.put(unit.toString(), unit);
-       }
-   }
-   public static DurationUnit byLabel(String label) {
-       return BY_LABEL.get(label);
-   }
+    private static final Map<String, DurationUnit> BY_LABEL;
+
+    static {
+        BY_LABEL = new HashMap<>();
+        for (DurationUnit unit : DurationUnit.values()) {
+            BY_LABEL.put(unit.toString(), unit);
+        }
+    }
 
     private final int labelId;
     private final String label;
     private final long minutes;
-
     DurationUnit(int labelId, long minutes) {
         this.labelId = labelId;
         label = BakeAssistant.CONTEXT.getResources().getString(labelId);
         this.minutes = minutes;
     }
 
+    public static DurationUnit byLabel(String label) {
+        return BY_LABEL.get(label);
+    }
+
     @Override
     public String toString() {
-       return label;
+        return label;
     }
 
     public String getLabel() {

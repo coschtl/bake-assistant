@@ -10,16 +10,26 @@ import java.util.Map;
 
 public class AbstractDbAdapter {
 
-    static interface ModelObjectBuilder<T> {
-        public T buildObject(Cursor cursor);
-    }
-
     private final SQLiteOpenHelper dbHelper;
     private SQLiteDatabase db;
     private boolean closed = true;
-
     public AbstractDbAdapter() {
         dbHelper = DatabaseHelper.INSTANCE;
+    }
+
+    public static void close(Cursor cursor) {
+        if (cursor != null && !cursor.isClosed()) {
+            cursor.close();
+        }
+    }
+
+    public static Map<String, Integer> createColMapping(String[] colNames) {
+        Map<String, Integer> mapping = new HashMap<String, Integer>();
+        int i = 0;
+        for (String col : colNames) {
+            mapping.put(col, i++);
+        }
+        return mapping;
     }
 
     public void close() {
@@ -55,19 +65,8 @@ public class AbstractDbAdapter {
         return this;
     }
 
-    public static void close(Cursor cursor) {
-        if (cursor != null && !cursor.isClosed()) {
-            cursor.close();
-        }
-    }
-
-    public static Map<String, Integer> createColMapping(String[] colNames) {
-        Map<String, Integer> mapping = new HashMap<String, Integer>();
-        int i = 0;
-        for (String col : colNames) {
-            mapping.put(col, i++);
-        }
-        return mapping;
+    interface ModelObjectBuilder<T> {
+        T buildObject(Cursor cursor);
     }
 
 }

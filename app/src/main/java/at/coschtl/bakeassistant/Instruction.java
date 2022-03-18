@@ -1,8 +1,6 @@
 package at.coschtl.bakeassistant;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
@@ -18,26 +16,7 @@ public class Instruction implements Serializable {
     private Time timeMin;
     private Time timeMax;
     private boolean done;
-
-    public static Instruction getStartInstruction(Date timeMin, Date timeMax) {
-        return createInstance(timeMin, timeMax, R.string.step_start);
-    }
-
-    public static Instruction getEndInstruction(Date timeMin, Date timeMax) {
-        return createInstance(timeMin, timeMax, R.string.step_done);
-    }
-
-    private static Instruction createInstance(Date timeMin, Date timeMax, int string) {
-        Instruction instruction = new Instruction(BakeAssistant.CONTEXT.getString(string)) {
-            @Override
-            public boolean showInteraction() {
-                return false;
-            }
-        };
-        instruction.setTimeMin(timeMin);
-        instruction.setTimeMax(timeMax);
-        return instruction;
-    }
+    private boolean active;
 
     public Instruction(Step step) {
         this.step = step;
@@ -49,12 +28,45 @@ public class Instruction implements Serializable {
         this.action = action;
     }
 
+    public static Instruction getStartInstruction(Date timeMin, Date timeMax) {
+        return createInstance(timeMin, timeMax, R.string.step_start, false);
+    }
+
+    public static Instruction getEndInstruction(Date timeMin, Date timeMax) {
+        return createInstance(timeMin, timeMax, R.string.step_done, true);
+    }
+
+    private static Instruction createInstance(Date timeMin, Date timeMax, int string, boolean alarm) {
+        Instruction instruction = new Instruction(BakeAssistant.CONTEXT.getString(string)) {
+            @Override
+            public boolean showInteraction() {
+                return false;
+            }
+
+            @Override
+            public boolean hasAlarm() {
+                return alarm;
+            }
+        };
+        instruction.setTimeMin(timeMin);
+        instruction.setTimeMax(timeMax);
+        return instruction;
+    }
+
     public Step getStep() {
         return step;
     }
 
     public boolean showInteraction() {
         return true;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     @Override
@@ -69,13 +81,19 @@ public class Instruction implements Serializable {
     public void setExecutionTime(Day day, int hour, int minute) {
         setExecutionTime(day.getDate(), hour, minute);
     }
-    public void setExecutionTime( int hour, int minute) {
+
+    public void setExecutionTime(int hour, int minute) {
         setExecutionTime(timeMin.date(), hour, minute);
     }
+
     private void setExecutionTime(Date day, int hour, int minute) {
         Time time = Time.of(day).setHour(hour).setMinute(minute);
-            timeMin = time;
-            timeMax = time;
+        timeMin = time;
+        timeMax = time;
+    }
+
+    public boolean hasAlarm() {
+        return step != null && step.isAlarm();
     }
 
     public boolean hasTimespan() {
@@ -94,14 +112,14 @@ public class Instruction implements Serializable {
         return timeMax;
     }
 
-    public Time getTimeMin() {
-        return timeMin;
-    }
-
     public void setTimeMax(Date timeMax) {
         if (!done) {
             this.timeMax = new Time(timeMax);
         }
+    }
+
+    public Time getTimeMin() {
+        return timeMin;
     }
 
     public void setTimeMin(Date timeMin) {
