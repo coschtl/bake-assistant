@@ -6,7 +6,7 @@
     <string name="settings">settings</string>
     <string name="add_step_recipe">add step</string>
     <string name="start_now">start now</string>
-    <string name="start_later">start later</string>
+    <string name="schedule">schedule</string>
     <string name="new_step">New step</string>
     <string name="new_recipe">new recipe</string>
     <string name="step_no">Step No. </string>

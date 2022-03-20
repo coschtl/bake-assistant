@@ -125,7 +125,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
         });
 
         findViewById(R.id.add_step_button).setOnClickListener(this);
-        findViewById(R.id.start_now_button).setOnClickListener(this);
+        findViewById(R.id.schedule_button).setOnClickListener(this);
         updateUi();
     }
 
@@ -155,7 +155,7 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
     public void onClick(View v) {
         if (v.getId() == R.id.add_step_button) {
             showStepPopup(BakeAssistant.CONTEXT.getResources().getString(R.string.new_step), null);
-        } else if (v.getId() == R.id.start_now_button) {
+        } else if (v.getId() == R.id.schedule_button) {
             dataAdapter.saveRecipe();
             Intent intent = new Intent(EditRecipe.this, PrepareRecipe.class);
             intent.putExtra(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID, recipe().getId());

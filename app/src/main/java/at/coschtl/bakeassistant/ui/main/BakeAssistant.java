@@ -32,7 +32,6 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
     public static Context CONTEXT;
     public static String PKG;
     public static String PKG_PREF;
-    public static Random RANDOM;
     private RecipeDbAdapter recipeDbAdapter;
     private RecyclerView recipesListView;
     private TextView noRecipesTextView;
@@ -45,8 +44,8 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
             CONTEXT = getApplicationContext();
             PKG = getApplicationContext().getPackageName();
             PKG_PREF = PKG + ".";
-            RANDOM = new Random();
         }
+
         setContentView(R.layout.bake_assistant);
         recipeDbAdapter = new RecipeDbAdapter();
         recipes = new ArrayList<>();

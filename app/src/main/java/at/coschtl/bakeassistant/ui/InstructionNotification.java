@@ -31,6 +31,8 @@ public class InstructionNotification extends AppCompatActivity implements View.O
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        System.out.println( getClass().getSimpleName() + " onCreate");
+        System.out.println("---------------> onCreate: InstructionNotification" );
         super.onCreate(savedInstanceState);
         setContentView(R.layout.alarm);
         Bundle extras = getIntent().getExtras();
@@ -71,6 +73,18 @@ public class InstructionNotification extends AppCompatActivity implements View.O
         } else {
             sendBroadcastAndFinish();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        System.out.println( getClass().getSimpleName() + " onResume");
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        System.out.println( getClass().getSimpleName() + " onStart");
+        super.onStart();
     }
 
     @Override

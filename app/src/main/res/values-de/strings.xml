@@ -5,8 +5,8 @@
     <string name="recipe">Rezept</string>
     <string name="settings">Einstellungen</string>
     <string name="add_step_recipe">Schritt hinzufügen</string>
-    <string name="start_now">Sofort starten</string>
-    <string name="start_later">Später starten</string>
+    <string name="start_now">Starten</string>
+    <string name="schedule">Planen</string>
     <string name="new_step">Neuer Schritt</string>
     <string name="new_recipe">Neues Rezept</string>
     <string name="step_no">Schritt No. </string>
