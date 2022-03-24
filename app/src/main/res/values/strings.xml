@@ -43,5 +43,8 @@
     <string name="instructions_scheduled">Alarm scheduled</string>
     <string name="back_will_abort">CAUTION: Another \'back\' will abort the preparation and all alarms!</string>
     <string name="start_with_alarm">start with alarm</string>
+    <string name="really_delete_recipe">Really delete recipe?</string>
+    <string name="yes">Yes</string>
+<string name="no">No</string>
 
 </resources>

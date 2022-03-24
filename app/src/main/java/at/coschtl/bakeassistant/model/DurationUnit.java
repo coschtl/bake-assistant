@@ -1,5 +1,7 @@
 package at.coschtl.bakeassistant.model;
 
+import android.content.Context;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +24,12 @@ public enum DurationUnit implements Serializable {
     }
 
     private final int labelId;
-    private final String label;
     private final long minutes;
+    private String label;
+
     DurationUnit(int labelId, long minutes) {
         this.labelId = labelId;
-        label = BakeAssistant.CONTEXT.getResources().getString(labelId);
+        label = BakeAssistant.CONTEXT == null ? null : BakeAssistant.CONTEXT.getResources().getString(labelId);
         this.minutes = minutes;
     }
 
@@ -36,10 +39,13 @@ public enum DurationUnit implements Serializable {
 
     @Override
     public String toString() {
-        return label;
+        return label == null ? super.toString() : label;
     }
 
-    public String getLabel() {
+    public String getLabel(Context context) {
+        if (label == null) {
+            label = context.getResources().getString(labelId);
+        }
         return label;
     }
 

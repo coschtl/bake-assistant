@@ -13,6 +13,7 @@ public class AbstractDbAdapter {
     private final SQLiteOpenHelper dbHelper;
     private SQLiteDatabase db;
     private boolean closed = true;
+
     public AbstractDbAdapter() {
         dbHelper = DatabaseHelper.INSTANCE;
     }

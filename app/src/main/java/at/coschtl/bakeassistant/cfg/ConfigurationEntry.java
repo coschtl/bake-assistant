@@ -7,6 +7,7 @@ public class ConfigurationEntry<T> {
     private final TypeConverter<T> typeConverter;
     private T value;
     private String unit;
+
     public ConfigurationEntry(String propertyName, TypeConverter<T> typeConverter) {
         this.propertyName = propertyName;
         this.typeConverter = typeConverter;

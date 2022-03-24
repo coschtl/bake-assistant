@@ -15,8 +15,8 @@ import at.coschtl.bakeassistant.model.Recipe;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> {
 
-    private List<Recipe> recipes;
     private final RecipeEditor recipeEditor;
+    private List<Recipe> recipes;
 
     public RecipeAdapter(List<Recipe> dataSet, RecipeEditor recipeEditor) {
         recipes = new ArrayList<>(dataSet);

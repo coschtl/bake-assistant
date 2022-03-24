@@ -1,8 +1,11 @@
 package at.coschtl.bakeassistant.ui.main;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -18,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.db.RecipeDbAdapter;
@@ -32,6 +35,7 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
     public static Context CONTEXT;
     public static String PKG;
     public static String PKG_PREF;
+
     private RecipeDbAdapter recipeDbAdapter;
     private RecyclerView recipesListView;
     private TextView noRecipesTextView;
@@ -46,6 +50,10 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
             PKG_PREF = PKG + ".";
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            startActivity(intent);
+        }
         setContentView(R.layout.bake_assistant);
         recipeDbAdapter = new RecipeDbAdapter();
         recipes = new ArrayList<>();
@@ -67,9 +75,25 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int adapterPosition = viewHolder.getAdapterPosition();
-                adapter.deleteRecipe(adapterPosition);
-                Recipe removed = recipes.remove(adapterPosition);
-                recipeDbAdapter.deleteRecipe(removed);
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            case DialogInterface.BUTTON_POSITIVE:
+                                adapter.deleteRecipe(adapterPosition);
+                                Recipe removed = recipes.remove(adapterPosition);
+                                recipeDbAdapter.deleteRecipe(removed);
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                break;
+                        }
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(BakeAssistant.this);
+                builder.setMessage(R.string.really_delete_recipe).setPositiveButton(R.string.yes, dialogClickListener)
+                        .setNegativeButton(R.string.no, dialogClickListener).show();
             }
         });
         itemTouchHelper.attachToRecyclerView(recipesListView);

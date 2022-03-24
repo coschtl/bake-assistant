@@ -17,31 +17,31 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Calendar;
 
-import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
-import at.coschtl.bakeassistant.util.SerializationUtil;
 
 public class InstructionNotification extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String EXTRA_INSTRUCTION = "instruction";
+    public static final String EXTRA_HAS_ALARM = "hasAlarm";
+    public static final String EXTRA_ACTION = "action";
+    public static final String EXTRA_TIMESPAN_STRING = "timespanString";
     private static final String ALARM_URI = "android.resource://" + BakeAssistant.PKG + "/" + R.raw.alarm;
 
     private final MediaPlayer mediaPlayer = new MediaPlayer();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        System.out.println( getClass().getSimpleName() + " onCreate");
-        System.out.println("---------------> onCreate: InstructionNotification" );
+        System.out.println(getClass().getSimpleName() + " onCreate");
+        System.out.println("---------------> onCreate: InstructionNotification");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.alarm);
         Bundle extras = getIntent().getExtras();
-        byte[] instructionAsBytes = extras.getByteArray(BakeAssistant.PKG_PREF + EXTRA_INSTRUCTION);
-        Instruction instruction = SerializationUtil.deserialize(instructionAsBytes);
-
-        if (instruction.hasAlarm()) {
-            setText(R.id.step_name, instruction.getAction(), InstructionNotification.this);
-            setText(R.id.step_timespan, instruction.getTimespanString(), InstructionNotification.this);
+        boolean hasAlarm = extras.getBoolean(BakeAssistant.PKG_PREF + EXTRA_HAS_ALARM);
+        String action = extras.getString(BakeAssistant.PKG_PREF + EXTRA_ACTION);
+        String timespan = extras.getString(BakeAssistant.PKG_PREF + EXTRA_TIMESPAN_STRING);
+        if (hasAlarm) {
+            setText(R.id.step_name, action, InstructionNotification.this);
+            setText(R.id.step_timespan, timespan, InstructionNotification.this);
             Button sleepButton = findViewById(R.id.sleep);
             sleepButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -49,11 +49,14 @@ public class InstructionNotification extends AppCompatActivity implements View.O
                     mediaPlayer.stop();
                     mediaPlayer.release();
                     Intent intent = new Intent(getApplicationContext(), InstructionNotification.class);
-                    intent.putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_INSTRUCTION, instructionAsBytes);
-                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+                    intent.putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, action);
+                    intent.putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, hasAlarm);
+                    intent.putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, timespan);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
                     Calendar cal = Calendar.getInstance();
-                   // cal.add(Calendar.SECOND, 10);
-                   cal.add(Calendar.MINUTE, 3);
+                    cal.add(Calendar.SECOND, 10);
+//                   cal.add(Calendar.MINUTE, 3);
                     ((AlarmManager) getSystemService(Context.ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pendingIntent);
                     finish();
                 }
@@ -77,13 +80,13 @@ public class InstructionNotification extends AppCompatActivity implements View.O
 
     @Override
     protected void onResume() {
-        System.out.println( getClass().getSimpleName() + " onResume");
+        System.out.println(getClass().getSimpleName() + " onResume");
         super.onResume();
     }
 
     @Override
     protected void onStart() {
-        System.out.println( getClass().getSimpleName() + " onStart");
+        System.out.println(getClass().getSimpleName() + " onStart");
         super.onStart();
     }
 

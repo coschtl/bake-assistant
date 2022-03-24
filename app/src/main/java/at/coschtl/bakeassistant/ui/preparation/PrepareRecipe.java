@@ -1,42 +1,40 @@
 package at.coschtl.bakeassistant.ui.preparation;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.Operation;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.InstructionCalculator;
+import at.coschtl.bakeassistant.NotificationWorker;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.db.RecipeDbAdapter;
 import at.coschtl.bakeassistant.model.DurationUnit;
 import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.ui.InstructionNotification;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
-import at.coschtl.bakeassistant.util.SerializationUtil;
 
 public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, View.OnClickListener {
 
     private static final String INSTANCE_STATE_CALCULATOR = "InstructionCalculator";
     private static final String INSTANCE_STATE_POSITION = "currentInstructionPosition";
+    private static final String TAG_BAKE_ASSISTANT = BakeAssistant.class.getName();
 
     private static final Map<DurationUnit, Integer> DURATION_TO_POS;
 
@@ -51,20 +49,16 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     private boolean timeSelectorVisible;
     private int currentInstructionPosition;
     private InstructionFinishedReceiver instructionFinishedReceiver;
-    private int backCount;
-    private PendingIntent pendingIntent;
-    private AlarmManager alarmManager;
-    private  View startButton;
+    private boolean closeOnBack;
+    private boolean forceCloseOnBack;
+    private long lastBackPressTime;
+    private View startButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        backCount = 0;
-        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
-            startActivity(intent);
-        }
+        closeOnBack = false;
+        forceCloseOnBack = false;
         setContentView(R.layout.preparation);
         Bundle extras = getIntent().getExtras();
         long recipeId = extras.getLong(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID);
@@ -98,9 +92,11 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     protected void onDestroy() {
         super.onDestroy();
         BakeAssistant.CONTEXT.unregisterReceiver(instructionFinishedReceiver);
-        if (pendingIntent != null) {
-            alarmManager.cancel(pendingIntent);
-        }
+        cancelAlarm();
+    }
+
+    private void cancelAlarm() {
+        WorkManager.getInstance(this).cancelAllWorkByTag(TAG_BAKE_ASSISTANT);
     }
 
     public void showTimeSelectionUi() {
@@ -120,15 +116,17 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
         if (timeSelectorVisible) {
             hideTimeSelectionUi();
         } else {
-            if (backCount++ == 0) {
-                Toast.makeText(this, R.string.back_will_abort, Toast.LENGTH_LONG).show();
-            } else {
-                if (pendingIntent != null) {
-                    alarmManager.cancel(pendingIntent);
-                    pendingIntent = null;
-                }
-                super.onBackPressed();
+            if (lastBackPressTime + 10000 < System.currentTimeMillis()) {
+                closeOnBack = false;
             }
+            if (closeOnBack || forceCloseOnBack) {
+                cancelAlarm();
+                super.onBackPressed();
+            } else {
+                Toast.makeText(this, R.string.back_will_abort, Toast.LENGTH_LONG).show();
+                closeOnBack = true;
+            }
+            lastBackPressTime = System.currentTimeMillis();
         }
     }
 
@@ -161,9 +159,13 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
         } else {
             addMillis = 3000;
         }
+        addMillis = 10000;
         Instruction currentInstruction = instructionsAdapter.getItem(currentInstructionPosition);
         currentInstruction.setActive(true);
         if (currentInstructionPosition >= instructionsAdapter.getCount() - 1) {
+            instructionsAdapter.notifyDataSetChanged();
+            forceCloseOnBack = true;
+            cancelAlarm();
             return;
         }
         Instruction nextInstruction = instructionsAdapter.getItem(++currentInstructionPosition);
@@ -171,22 +173,23 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
 
         System.out.println("startNextAlarm: " + currentInstructionPosition);
 
-        Intent intent = new Intent(this, InstructionNotification.class);
-
-        System.out.println("current step is: " + currentInstruction.getAction() + ", next step is: " + nextInstruction.getAction());
-        intent.putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_INSTRUCTION, SerializationUtil.serialize(nextInstruction));
-
-        pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
-        long alarmTime = nextInstruction.getTimeMin().date().getTime() + addMillis;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            System.out.println("scheduling alarm WhileIdle for " + new Date(alarmTime));
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
-        } else {
-            System.out.println("scheduling alarm for " + new Date(alarmTime));
-            alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntent);
+        Data inputData = new Data.Builder()
+                .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, nextInstruction.hasAlarm())
+                .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, nextInstruction.getAction())
+                .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, nextInstruction.getTimespanString())
+                .build();
+        long delay = nextInstruction.getTimeMin().date().getTime() - System.currentTimeMillis();
+        if (delay < 0) {
+            delay = 0;
         }
+        WorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                .setInputData(inputData)
+                .addTag(TAG_BAKE_ASSISTANT)
+                .build();
+        WorkManager.getInstance(this).enqueue(uploadWorkRequest);
+
         System.out.println("alarm scheduled");
 
     }
-
 }
