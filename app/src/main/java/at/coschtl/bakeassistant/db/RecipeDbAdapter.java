@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import at.coschtl.bakeassistant.cfg.Configuration;
 import at.coschtl.bakeassistant.model.Action;
 import at.coschtl.bakeassistant.model.DurationUnit;
 import at.coschtl.bakeassistant.model.Recipe;
@@ -162,16 +161,6 @@ public class RecipeDbAdapter extends AbstractDbAdapter implements AutoCloseable 
         cvs.put(DB_STEPS.COL_ALARM, step.isAlarm() ? 1 : 0);
         cvs.put(DB_STEPS.COL_DURATION_UNIT, step.getDurationUnit().name());
         return cvs;
-    }
-
-    private void updateConfigurationEntry(Cursor cursor, Configuration config) {
-        if (cursor != null && !cursor.isClosed()) {
-            // look if path is still valid
-            String propertyName = cursor.getString(ConfigDbAdapter.DB.COL_MAPPING.get(ConfigDbAdapter.DB.COL_PROPERTY_NAME));
-            String value = cursor.getString(ConfigDbAdapter.DB.COL_MAPPING.get(ConfigDbAdapter.DB.COL_VALUE));
-            String unit = cursor.getString(ConfigDbAdapter.DB.COL_MAPPING.get(ConfigDbAdapter.DB.COL_UNIT));
-            config.updateProperty(propertyName, value, unit);
-        }
     }
 
     private final ModelObjectBuilder<Step> getStepObjectBuilder() {

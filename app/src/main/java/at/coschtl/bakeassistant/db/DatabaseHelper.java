@@ -8,7 +8,7 @@ import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "bakeassistant";
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
 
     public static final DatabaseHelper INSTANCE = new DatabaseHelper();
 
@@ -25,7 +25,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(RecipeDbAdapter.DB_ACTION.DATABASE_CREATE);
         db.execSQL(RecipeDbAdapter.DB_RECIPE.DATABASE_CREATE);
         db.execSQL(RecipeDbAdapter.DB_STEPS.DATABASE_CREATE);
-        db.execSQL(ConfigDbAdapter.DB.DATABASE_CREATE);
         createIndices(db);
     }
 
@@ -33,7 +32,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(RecipeDbAdapter.DB_ACTION.DATABASE_CREATE_INDEX_NAME);
         db.execSQL(RecipeDbAdapter.DB_RECIPE.DATABASE_CREATE_INDEX_NAME);
         db.execSQL(RecipeDbAdapter.DB_STEPS.DATABASE_CREATE_INDEX);
-        db.execSQL(ConfigDbAdapter.DB.DATABASE_CREATE_INDEX_PROPERTY);
     }
 
     @Override
@@ -45,6 +43,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion == 1) {
             db.execSQL("ALTER TABLE " + RecipeDbAdapter.DB_STEPS.DATABASE_TABLE + " ADD " + RecipeDbAdapter.DB_STEPS.COL_ALARM + " integer default 0");
+        }
+        if (oldVersion > 0 && oldVersion < 3) {
+            db.execSQL("drop table configuration");
         }
     }
 }

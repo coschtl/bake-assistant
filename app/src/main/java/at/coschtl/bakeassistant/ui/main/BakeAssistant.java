@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -15,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,10 +23,9 @@ import java.util.List;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.db.RecipeDbAdapter;
 import at.coschtl.bakeassistant.model.Recipe;
-import at.coschtl.bakeassistant.ui.cfg.ConfigurationActivity;
 import at.coschtl.bakeassistant.ui.recipe.EditRecipe;
 
-public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenuItemClickListener {
+public class BakeAssistant extends AppCompatActivity {
 
     public static final String EXTRA_RECIPE_ID = "extraRecipeId";
     public static Context CONTEXT;
@@ -78,7 +74,7 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
                 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
+                        switch (which) {
                             case DialogInterface.BUTTON_POSITIVE:
                                 adapter.deleteRecipe(adapterPosition);
                                 Recipe removed = recipes.remove(adapterPosition);
@@ -129,14 +125,6 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
         }
     }
 
-    public void showPopup(View v) {
-        PopupMenu popup = new PopupMenu(this, v);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.main_settings_menu, popup.getMenu());
-        popup.setOnMenuItemClickListener(this);
-        popup.show();
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -152,19 +140,6 @@ public class BakeAssistant extends AppCompatActivity implements PopupMenu.OnMenu
     private void closeDb() {
         if (recipeDbAdapter != null) {
             recipeDbAdapter.close();
-        }
-    }
-
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_settings:
-                closeDb();
-                Intent intent = new Intent(BakeAssistant.this, ConfigurationActivity.class);
-                startActivityForResult(intent, 1);
-                return true;
-            default:
-                return false;
         }
     }
 }
