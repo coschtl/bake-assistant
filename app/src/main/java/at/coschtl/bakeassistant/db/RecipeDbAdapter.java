@@ -29,6 +29,7 @@ public class RecipeDbAdapter extends AbstractDbAdapter implements AutoCloseable 
             long id = db().insert(DB_RECIPE.DATABASE_TABLE, null, toContentValues(recipe));
             saved = new Recipe(id, recipe.getName());
         } else {
+            db().update(DB_RECIPE.DATABASE_TABLE, toContentValues(recipe), DB_RECIPE.COL_ID + "=?", new String[]{Long.toString(recipe.getId())});
             saved = new Recipe(recipe.getId(), recipe.getName()).addSteps(recipe.getSteps());
         }
         deleteAllSteps(saved);

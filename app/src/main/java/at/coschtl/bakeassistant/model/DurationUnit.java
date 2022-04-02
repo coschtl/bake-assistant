@@ -52,6 +52,9 @@ public enum DurationUnit implements Serializable {
     public long getMinutes() {
         return minutes;
     }
+    public long getSeconds() {
+        return minutes * 60L;
+    }
 
     public int getLabelId() {
         return labelId;

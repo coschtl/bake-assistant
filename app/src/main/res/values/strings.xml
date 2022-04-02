@@ -35,7 +35,7 @@
 
     <string name="title_preparation">Preparation:</string>
     <string name="label_start_time">Start-Time: </string>
-    <string name="ok">Done</string>
+    <string name="done">Done</string>
     <string name="sleep">Sleep 3 min</string>
 
     <string name="label_day">Day</string>
@@ -44,7 +44,12 @@
     <string name="back_will_abort">CAUTION: Another \'back\' will abort the preparation and all alarms!</string>
     <string name="start_with_alarm">start with alarm</string>
     <string name="really_delete_recipe">Really delete recipe?</string>
+    <string name="adjust_time">Adjust time of next steps</string>
     <string name="yes">Yes</string>
-<string name="no">No</string>
+    <string name="no">No</string>
+    <string name="ok">Ok</string>
+    <string name="start_in_the_middle">One or more steps are in the past. Start with the step planned for now?</string>
+    <string name="reason_manage_overlay_permissions">In the following system-dialog, you must grant the right to <i>Display over other apps</i>.\n\nThe application needs this right to be able to show alarms when running in background.</string>
+    <string name="can_not_run_without_permission">The application can not work properly without this permission!</string>
 
 </resources>

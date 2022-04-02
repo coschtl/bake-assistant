@@ -8,6 +8,7 @@ import java.util.List;
 
 import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.model.Step;
+import at.coschtl.bakeassistant.util.Time;
 
 public class InstructionCalculator implements Serializable {
     private final Recipe recipe;
@@ -41,35 +42,42 @@ public class InstructionCalculator implements Serializable {
         return recipe;
     }
 
-    public InstructionCalculator recalculate(int changedInstructionPosition) {
-        Calendar calMin = Calendar.getInstance();
-        Calendar calMax = Calendar.getInstance();
-        Date fixed = instructions.get(changedInstructionPosition).getTimeMin().date();
+    public InstructionCalculator recalculateBySeconds(int changedInstructionPosition, int diffSeconds, int minimumStepToRecalculate) {
+        recalculateRemaining(changedInstructionPosition, diffSeconds);
+        recalculatePredecessors(changedInstructionPosition, diffSeconds, minimumStepToRecalculate);
+        return this;
+    }
 
-        calMin.setTime(fixed);
-        calMax.setTime(fixed);
-        for (int i = changedInstructionPosition; i < instructions.size(); i++) {
-            Instruction instruction = instructions.get(i);
-            instruction.setTimeMin(calMin.getTime());
-            instruction.setTimeMax(calMax.getTime());
-            Step step = instruction.getStep();
-            if (step != null) {
-                calMin.add(Calendar.MINUTE, (int) (step.getDurationMin() * step.getDurationUnit().getMinutes()));
-                calMax.add(Calendar.MINUTE, (int) (step.getDurationMax() * step.getDurationUnit().getMinutes()));
-            }
+    public InstructionCalculator recalculatePredecessors(int changedInstructionPosition, int diffSeconds, int minimumStepToRecalculate) {
+        if (minimumStepToRecalculate >= 0  && minimumStepToRecalculate<changedInstructionPosition) {
+            return this;
         }
-
-        calMin.setTime(fixed);
-        calMax.setTime(fixed);
-        for (int i = changedInstructionPosition; i >= 0; i--) {
+        Calendar cal = Calendar.getInstance();
+        for (int i = changedInstructionPosition - 1; i >= 0; i--) {
             Instruction instruction = instructions.get(i);
-            instruction.setTimeMin(calMin.getTime());
-            instruction.setTimeMax(calMax.getTime());
-            Step step = instruction.getStep();
-            if (step != null) {
-                calMin.add(Calendar.MINUTE, (int) (-1 * step.getDurationMax() * step.getDurationUnit().getMinutes()));
-                calMax.add(Calendar.MINUTE, (int) (-1 * step.getDurationMin() * step.getDurationUnit().getMinutes()));
-            }
+            instruction.setTimeMin(getNewDate(instruction.getTimeMin(), diffSeconds, cal));
+            instruction.setTimeMax(getNewDate(instruction.getTimeMax(), diffSeconds, cal));
+        }
+        return this;
+    }
+
+    private Date getNewDate(Time origTime, int diffSeconds, Calendar cal) {
+        cal.setTime(origTime.date());
+        cal.add(Calendar.SECOND, diffSeconds);
+        return cal.getTime();
+    }
+
+    public InstructionCalculator recalculateRemaining(int changedInstructionPosition, int diffSeconds) {
+        Calendar cal = Calendar.getInstance();
+        Instruction instruction = instructions.get(changedInstructionPosition);
+        instruction.setTimeMin(getNewDate(instruction.getTimeMin(), diffSeconds, cal));
+        instruction.setTimeMax(instruction.getTimeMin().date());
+        for (int i = changedInstructionPosition + 1; i < instructions.size(); i++) {
+            Date newTimeMin = getNewDate(instruction.getTimeMin(), instruction.getDurationMinSeconds(), cal);
+            Date newTimeMax = getNewDate(instruction.getTimeMax(), instruction.getDurationMaxSeconds(), cal);
+            instruction = instructions.get(i);
+            instruction.setTimeMin(newTimeMin);
+            instruction.setTimeMax(newTimeMax);
         }
         return this;
     }

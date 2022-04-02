@@ -36,7 +36,7 @@
 
     <string name="title_preparation">Zubereitung:</string>
     <string name="label_start_time">Start-Zeit: </string>
-    <string name="ok">OK</string>
+    <string name="done">Fertig</string>
     <string name="sleep">3 min Pause</string>
 
     <string name="label_day">Tag</string>
@@ -45,6 +45,11 @@
     <string name="back_will_abort">ACHTUNG: Ein nochmaliges \'Zurück\' bricht die Zubereitung und alle Alarme ab!</string>
     <string name="start_with_alarm">Mit Alarm starten</string>
     <string name="really_delete_recipe">Rezept wirklich löschen?</string>
+    <string name="adjust_time">Verzögerung in Zeitplan übernehmen</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
+    <string name="ok">Ok</string>
+    <string name="start_in_the_middle">Einzelne Schritte liegen in der Vergangenheit. Mit dem aktuell eingeplanten Schritt starten?</string>
+    <string name="reason_manage_overlay_permissions">Im folgenden System-Dialog muss die Berechtigung <i>Am Anfang anzeigen</i> erteilt werden.\n\nDies ist nötig, damit die App Benachrichtigungen anzeigen kann, während sie im Hintergrund läuft.</string>
+    <string name="can_not_run_without_permission">Die Applikation funktioniert ohne diese Berechtigung nicht!</string>
 </resources>

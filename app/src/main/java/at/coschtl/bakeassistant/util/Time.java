@@ -40,6 +40,13 @@ public class Time implements Serializable {
         return this;
     }
 
+    public Time setSecond(int second) {
+        Calendar cal = cal();
+        cal.set(Calendar.SECOND, second);
+        time = cal.getTime();
+        return this;
+    }
+
     public Date date() {
         return time;
     }
@@ -47,6 +54,13 @@ public class Time implements Serializable {
     public Time setHour(int hour) {
         Calendar cal = cal();
         cal.set(Calendar.HOUR_OF_DAY, hour);
+        time = cal.getTime();
+        return this;
+    }
+
+    public Time addSeconds(int seconds) {
+        Calendar cal = cal();
+        cal.add(Calendar.SECOND, seconds);
         time = cal.getTime();
         return this;
     }

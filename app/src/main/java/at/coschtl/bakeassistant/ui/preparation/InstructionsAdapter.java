@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -48,7 +49,7 @@ public class InstructionsAdapter extends ArrayAdapter<Instruction> {
         return null;
     }
 
-    void updateRow(LinearLayout row, Instruction instruction) {
+    void updateRow(View row, Instruction instruction) {
         setText(R.id.time_min, instruction.getTimeMin().toString(), row);
         if (instruction.hasTimespan()) {
             row.findViewById(R.id.spacer).setVisibility(View.VISIBLE);
@@ -74,19 +75,18 @@ public class InstructionsAdapter extends ArrayAdapter<Instruction> {
         });
     }
 
-    public void notifyInstructionChanged(int position) {
-        instructionCalculator.recalculate(position);
-        notifyDataSetChanged();
-    }
-
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LinearLayout row = (LinearLayout) LayoutInflater.from(getContext()).inflate(R.layout.instruction_row, null);
+        View row = LayoutInflater.from(getContext()).inflate(R.layout.instruction_row, null);
         Instruction instruction = getItem(position);
         updateRow(row, instruction);
         row.setOnLongClickListener(v -> {
-            new TimeSetter((PrepareRecipe) getContext(), this, row, position).show();
+            row.getRootView().findViewById(R.id.start_now_button).setVisibility(View.GONE);
+            PrepareRecipe prepareRecipe = (PrepareRecipe) getContext();
+            if (!prepareRecipe.isPreparationRunning() || position >= prepareRecipe.getCurrentInstructionPosition()) {
+                new TimeSetter(prepareRecipe, this, row, position).show();
+            }
             return false;
         });
         return row;

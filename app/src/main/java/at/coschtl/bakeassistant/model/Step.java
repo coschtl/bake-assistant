@@ -81,6 +81,9 @@ public class Step implements Serializable {
 
     @Override
     public String toString() {
+        if (durationMin == durationMax) {
+            return action.getName() + ": " + durationMin + " " + durationUnit;
+        }
         return action.getName() + ": " + durationMin + " - " + durationMax + " " + durationUnit;
     }
 }

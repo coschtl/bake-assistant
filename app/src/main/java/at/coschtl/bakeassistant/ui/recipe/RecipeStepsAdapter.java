@@ -111,5 +111,6 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
             menu.add(Menu.NONE, MENU_DOWN, pos++, R.string.menu_down);
         }
 
+
     }
 }

@@ -32,30 +32,57 @@
             android:textSize="20dp" />
 
         <LinearLayout
+            android:id="@+id/adjust_time_row"
+            android:layout_below="@+id/step_timespan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/step_timespan"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <CheckBox
+                android:id="@+id/adjust_time"
+                android:layout_width="25dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="10dp" />
+
+            <TextView
+                android:id="@+id/adjust_time_label"
+                style="@style/Widget.AppCompat.EditText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:text="@string/adjust_time" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/adjust_time_row"
             android:layout_margin="10dp"
             android:layout_marginTop="20dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <Button
+            <ImageView
                 android:id="@+id/sleep"
-                android:layout_width="150dp"
+                android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:layout_marginRight="20dp"
-                android:text="@string/sleep"
-                android:layout_gravity="center"
-                android:textSize="15dp" />
+                android:layout_margin="30dp"
+                android:src="@drawable/ic_baseline_snooze_24"/>
 
-            <Button
-                android:id="@+id/done"
-                android:layout_width="150dp"
+            <ImageView
+                android:id="@+id/silent"
+                android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:text="@string/ok"
-                android:layout_gravity="center"
-                android:textSize="25dp" />
+                android:layout_margin="30dp"
+                android:src="@drawable/ic_baseline_volume_off_24"/>
+
+            <ImageView
+                android:id="@+id/done"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="30dp"
+                android:src="@drawable/ic_baseline_done_outline_24"/>
         </LinearLayout>
     </RelativeLayout>
 

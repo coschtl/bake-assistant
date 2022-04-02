@@ -1,5 +1,6 @@
 package at.coschtl.bakeassistant.ui.preparation;
 
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
@@ -9,15 +10,18 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.InstructionCalculator;
@@ -31,9 +35,10 @@ import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 
 public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, View.OnClickListener {
 
+    public static final String EXTRA_ADJUST_TIME_SECONDS = "adjustTimeSecondss";
     private static final String INSTANCE_STATE_CALCULATOR = "InstructionCalculator";
     private static final String INSTANCE_STATE_POSITION = "currentInstructionPosition";
-    private static final String TAG_BAKE_ASSISTANT = BakeAssistant.class.getName();
+    private static final Logger LOGGER = Logger.getLogger(PrepareRecipe.class.getName());
 
     private static final Map<DurationUnit, Integer> DURATION_TO_POS;
 
@@ -47,17 +52,20 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     private ListView instructionsListView;
     private boolean timeSelectorVisible;
     private int currentInstructionPosition;
+    private boolean preparationRunning;
     private InstructionFinishedReceiver instructionFinishedReceiver;
     private boolean closeOnBack;
     private boolean forceCloseOnBack;
     private long lastBackPressTime;
     private View startButton;
+    private boolean startInTheMiddle;
+    private int minimumStepSet = -1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         closeOnBack = false;
-        forceCloseOnBack = false;
+        forceCloseOnBack = true;
         setContentView(R.layout.preparation);
         Bundle extras = getIntent().getExtras();
         long recipeId = extras.getLong(BakeAssistant.PKG_PREF + BakeAssistant.EXTRA_RECIPE_ID);
@@ -81,10 +89,26 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.start_now_button) {
+            startInTheMiddle = false;
             Toast.makeText(this, R.string.instructions_scheduled, Toast.LENGTH_LONG).show();
-            startNextAlarm();
+            forceCloseOnBack = false;
             startButton.setVisibility(View.GONE);
+            long origStartTime = instructionsAdapter.getItem(0).getTimeMin().date().getTime();
+            long now = System.currentTimeMillis();
+            if (origStartTime < now && origStartTime + 300000L > now) {
+                instructionsAdapter.getInstructionCalculator().recalculateBySeconds(0, (int) ((now - origStartTime + 1000L) / 1000L), 0);
+                instructionsAdapter.notifyDataSetChanged();
+            }
+            startNextAlarm(0);
         }
+    }
+
+    public boolean isPreparationRunning() {
+        return preparationRunning;
+    }
+
+    public int getMinimumStepSet() {
+        return minimumStepSet;
     }
 
     @Override
@@ -95,7 +119,7 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     }
 
     private void cancelAlarm() {
-        WorkManager.getInstance(this).cancelAllWorkByTag(TAG_BAKE_ASSISTANT);
+        WorkManager.getInstance(this).cancelAllWorkByTag(BakeAssistant.TAG_BAKE_ASSISTANT);
     }
 
     public void showTimeSelectionUi() {
@@ -104,16 +128,28 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
         timeSelectorVisible = true;
     }
 
-    public void hideTimeSelectionUi() {
+    public void hideTimeSelectionUi(int selectedStep) {
         findViewById(R.id.selectTime).setVisibility(View.GONE);
         findViewById(R.id.preparation).setVisibility(View.VISIBLE);
         timeSelectorVisible = false;
+        if (isPreparationRunning() && instructionsAdapter.getItem(currentInstructionPosition).getTimeMin().date().before(new Date())) {
+            cancelAlarm();
+            startInTheMiddle = true;
+            startNextAlarm(0);
+        }
+        if (selectedStep >= 0) {
+            if (minimumStepSet >= 0) {
+                minimumStepSet = Math.min(minimumStepSet, selectedStep);
+            } else {
+                minimumStepSet = selectedStep;
+            }
+        }
     }
 
     @Override
     public void onBackPressed() {
         if (timeSelectorVisible) {
-            hideTimeSelectionUi();
+            hideTimeSelectionUi(-1);
         } else {
             if (lastBackPressTime + 10000 < System.currentTimeMillis()) {
                 closeOnBack = false;
@@ -140,25 +176,24 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
         }
     }
 
+    public int getCurrentInstructionPosition() {
+        return currentInstructionPosition;
+    }
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        System.out.println("onSaveInstanceState");
         outState.putSerializable(BakeAssistant.PKG_PREF + INSTANCE_STATE_CALCULATOR, instructionsAdapter.getInstructionCalculator());
         outState.putInt(BakeAssistant.PKG_PREF + INSTANCE_STATE_POSITION, currentInstructionPosition);
     }
 
-    public void startNextAlarm() {
+    public void startNextAlarm(int adjustTimeSeconds) {
         //handle last instruction
-        long addMillis = 0;
         if (currentInstructionPosition > 0) {
             Instruction lastInstruction = instructionsAdapter.getItem(currentInstructionPosition - 1);
             lastInstruction.setActive(false);
             lastInstruction.setDone(true);
-        } else {
-            addMillis = 3000;
         }
-        addMillis = 10000;
         Instruction currentInstruction = instructionsAdapter.getItem(currentInstructionPosition);
         currentInstruction.setActive(true);
         if (currentInstructionPosition >= instructionsAdapter.getCount() - 1) {
@@ -167,28 +202,57 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
             cancelAlarm();
             return;
         }
+        if (adjustTimeSeconds > 0) {
+            instructionsAdapter.getInstructionCalculator().recalculateRemaining(currentInstructionPosition, adjustTimeSeconds);
+        }
         Instruction nextInstruction = instructionsAdapter.getItem(++currentInstructionPosition);
         instructionsAdapter.notifyDataSetChanged();
-
-        System.out.println("startNextAlarm: " + currentInstructionPosition);
+        preparationRunning = true;
 
         Data inputData = new Data.Builder()
                 .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, nextInstruction.hasAlarm())
+                .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_SUPPRESS_ADJUST_ROW, nextInstruction.getType() == Instruction.Type.LAST)
                 .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, nextInstruction.getAction())
                 .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, nextInstruction.getTimespanString())
                 .build();
         long delay = nextInstruction.getTimeMin().date().getTime() - System.currentTimeMillis();
         if (delay < 0) {
-            delay = 0;
+            if (startInTheMiddle) {
+                startNextAlarm(adjustTimeSeconds);
+            } else {
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                startInTheMiddle = true;
+                                startNextAlarm(adjustTimeSeconds);
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                startButton.setVisibility(View.VISIBLE);
+                                forceCloseOnBack = true;
+                                currentInstruction.setActive(false);
+                                instructionsAdapter.notifyDataSetChanged();
+                                break;
+                        }
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.start_in_the_middle)
+                        .setPositiveButton(R.string.yes, dialogClickListener)
+                        .setNegativeButton(R.string.no, dialogClickListener)
+                        .show();
+            }
+            return;
         }
         WorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                 .setInputData(inputData)
-                .addTag(TAG_BAKE_ASSISTANT)
+                .addTag(BakeAssistant.TAG_BAKE_ASSISTANT)
                 .build();
         WorkManager.getInstance(this).enqueue(uploadWorkRequest);
 
-        System.out.println("alarm scheduled");
-
+        LOGGER.fine("alarm scheduled");
     }
 }

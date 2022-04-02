@@ -28,6 +28,9 @@ import at.coschtl.bakeassistant.ui.recipe.EditRecipe;
 public class BakeAssistant extends AppCompatActivity {
 
     public static final String EXTRA_RECIPE_ID = "extraRecipeId";
+    public static final String TAG_BAKE_ASSISTANT = BakeAssistant.class.getName();
+    public static final int RC_OVERLAY_PERMISSION = 1111;
+
     public static Context CONTEXT;
     public static String PKG;
     public static String PKG_PREF;
@@ -45,12 +48,23 @@ public class BakeAssistant extends AppCompatActivity {
             PKG = getApplicationContext().getPackageName();
             PKG_PREF = PKG + ".";
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            startActivity(intent);
-        }
         setContentView(R.layout.bake_assistant);
+
+        if (!hasOverlayRight()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(BakeAssistant.this);
+            builder.setMessage(R.string.reason_manage_overlay_permissions).setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                    startActivityForResult(intent, RC_OVERLAY_PERMISSION);
+                }
+            }).show();
+        } else {
+            initAndShowUi();
+        }
+    }
+
+    private void initAndShowUi() {
         recipeDbAdapter = new RecipeDbAdapter();
         recipes = new ArrayList<>();
 
@@ -83,6 +97,7 @@ public class BakeAssistant extends AppCompatActivity {
 
                             case DialogInterface.BUTTON_NEGATIVE:
                                 //No button clicked
+                                adapter.notifyDataSetChanged();
                                 break;
                         }
                     }
@@ -104,6 +119,29 @@ public class BakeAssistant extends AppCompatActivity {
             }
         });
         loadRecipes();
+    }
+
+    private boolean hasOverlayRight() {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_OVERLAY_PERMISSION) {
+            if  (!hasOverlayRight()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(BakeAssistant.this);
+                                    builder.setMessage(R.string.can_not_run_without_permission).setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            System.exit(0);
+                                        }
+                                    }).show();
+            } else {
+                initAndShowUi();
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     public void edit(long recipeId) {
@@ -134,7 +172,9 @@ public class BakeAssistant extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadRecipes();
+        if (hasOverlayRight()) {
+            loadRecipes();
+        }
     }
 
     private void closeDb() {

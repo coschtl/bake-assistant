@@ -10,22 +10,24 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.util.Day;
+import at.coschtl.bakeassistant.util.Time;
 
 public class TimeSetter implements View.OnClickListener {
     private final PrepareRecipe activity;
     private final InstructionsAdapter instructionsAdapter;
-    private final LinearLayout row;
+    private final View row;
     private final int position;
     private final Spinner datePicker;
     private final TimePicker timePicker;
 
-    public TimeSetter(PrepareRecipe activity, InstructionsAdapter instructionsAdapter, LinearLayout row, int position) {
+    public TimeSetter(PrepareRecipe activity, InstructionsAdapter instructionsAdapter, View row, int position) {
         this.activity = activity;
         this.instructionsAdapter = instructionsAdapter;
         this.row = row;
@@ -44,6 +46,16 @@ public class TimeSetter implements View.OnClickListener {
         return instructionsAdapter.getItem(position);
     }
 
+    private int getDayPosition(Date date) {
+        for (int i=0; i<datePicker.getAdapter().getCount(); i++) {
+            Day day = (Day) datePicker.getAdapter().getItem(i);
+            if (day.toString().equals(new Day(date).toString())) {
+                return i;
+            }
+        }
+        return 3;
+    }
+
     public void show() {
         activity.showTimeSelectionUi();
         activity.findViewById(R.id.setTime);
@@ -51,21 +63,38 @@ public class TimeSetter implements View.OnClickListener {
         Instruction instruction = instruction();
         setText(R.id.step_name, instruction().getAction(), activity);
         setText(R.id.step_planned, instruction.getTimespanString(), activity);
-        timePicker.setCurrentHour(instruction.getTimeMin().hour());
-        timePicker.setCurrentMinute(instruction.getTimeMin().minute());
+        if (activity.isPreparationRunning()) {
+            Calendar cal = Calendar.getInstance();
+            timePicker.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
+            timePicker.setCurrentMinute(cal.get(Calendar.MINUTE));
+            datePicker.setSelection(getDayPosition(cal.getTime()));
+        } else {
+            timePicker.setCurrentHour(instruction.getTimeMin().hour());
+            timePicker.setCurrentMinute(instruction.getTimeMin().minute());
+            datePicker.setSelection(getDayPosition(instruction.getTimeMin().date()));
+        }
         Button timeOk = activity.findViewById(R.id.setTime);
         timeOk.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
+        Time executionTime;
+        Instruction instruction = instruction();
         if (datePicker.getVisibility() == View.VISIBLE) {
-            instruction().setExecutionTime((Day) datePicker.getSelectedItem(), timePicker.getCurrentHour(), timePicker.getCurrentMinute());
+            executionTime =  Time.of(((Day) datePicker.getSelectedItem()).getDate());
         } else {
-            instruction().setExecutionTime(timePicker.getCurrentHour(), timePicker.getCurrentMinute());
+            executionTime =  Time.of(instruction.getTimeMin().date());
         }
-        instructionsAdapter.notifyInstructionChanged(position);
-        activity.hideTimeSelectionUi();
+        executionTime.setHour(timePicker.getCurrentHour()).setMinute(timePicker.getCurrentMinute()).setSecond(0);
+        int diffSeconds = (int) ((executionTime.date().getTime() - instruction.getTimeMin().date().getTime()) /1000L);
+        //FIXME: do not change steps which are already done
+        instructionsAdapter.getInstructionCalculator().recalculateBySeconds(position, diffSeconds, activity.getMinimumStepSet());
+        instructionsAdapter. notifyDataSetChanged();
+        activity.hideTimeSelectionUi(position);
+        if (!activity.isPreparationRunning()) {
+            row.getRootView().findViewById(R.id.start_now_button).setVisibility(View.VISIBLE);
+        }
     }
 
     private List<Day> getDays(Date base) {

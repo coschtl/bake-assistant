@@ -29,6 +29,8 @@ import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.model.Action;
@@ -41,6 +43,7 @@ import at.coschtl.bakeassistant.ui.preparation.PrepareRecipe;
 public class EditRecipe extends AppCompatActivity implements View.OnClickListener {
 
     private static final Map<DurationUnit, Integer> DURATION_TO_POS;
+    private static final Logger LOGGER = Logger.getLogger(EditRecipe.class.getName());
 
     static {
         DURATION_TO_POS = new LinkedHashMap<>();
@@ -62,32 +65,24 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
         dataAdapter = new RecipeDataAdapter(recipeId);
         if (recipeId >= 0) {
             title.setText(dataAdapter.getRecipe().getName());
-            title.setEnabled(false);
-            title.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    title.setEnabled(true);
-                    return true;
-                }
-            });
-        } else {
-            title.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    // not needed
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    // not needed
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    dataAdapter.getRecipe().setName(title.getText().toString());
-                }
-            });
         }
+        title.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // not needed
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // not needed
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                dataAdapter.getRecipe().setName(title.getText().toString());
+            }
+        });
+
 
         noStepsTextView = findViewById(R.id.steps_no_recipes);
         stepsListView = findViewById(R.id.steps_listview);
@@ -107,7 +102,9 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
                 int adapterPosition = viewHolder.getAdapterPosition();
                 adapter.deleteStep(adapterPosition);
                 recipe().getSteps().remove(adapterPosition);
-                System.out.println("SWIPED: " + (direction == ItemTouchHelper.LEFT ? "left" : (direction == ItemTouchHelper.RIGHT ? "right" : "unknown: " + direction)));
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("SWIPED: " + (direction == ItemTouchHelper.LEFT ? "left" : (direction == ItemTouchHelper.RIGHT ? "right" : "unknown: " + direction)));
+                }
             }
         });
         itemTouchHelper.attachToRecyclerView(stepsListView);
@@ -180,13 +177,14 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
         ArrayAdapter<Action> actionsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, allActions);
         action.setAdapter(actionsAdapter);
 
-
         final EditText durationMin = viewInflated.findViewById(R.id.durationMin);
         final EditText durationMax = viewInflated.findViewById(R.id.durationMax);
         final CheckBox alarm = viewInflated.findViewById(R.id.alarm);
         builder.setView(viewInflated);
 
-        if (step != null) {
+        if (step == null) {
+            alarm.setChecked(true);
+        } else {
             action.setText(step.getAction().getName());
             durationMin.setText(Integer.toString(step.getDurationMin()));
             durationMax.setText(Integer.toString(step.getDurationMax()));
@@ -253,7 +251,6 @@ public class EditRecipe extends AppCompatActivity implements View.OnClickListene
                 }
                 break;
         }
-        System.out.println("action: " + item.getItemId() + " - pos: " + ((RecipeStepsAdapter) stepsListView.getAdapter()).getAktLongClickPosition());
         return super.onContextItemSelected(item);
     }
 
