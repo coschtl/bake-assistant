@@ -88,7 +88,6 @@ public class TimeSetter implements View.OnClickListener {
         }
         executionTime.setHour(timePicker.getCurrentHour()).setMinute(timePicker.getCurrentMinute()).setSecond(0);
         int diffSeconds = (int) ((executionTime.date().getTime() - instruction.getTimeMin().date().getTime()) /1000L);
-        //FIXME: do not change steps which are already done
         instructionsAdapter.getInstructionCalculator().recalculateBySeconds(position, diffSeconds, activity.getMinimumStepSet());
         instructionsAdapter. notifyDataSetChanged();
         activity.hideTimeSelectionUi(position);

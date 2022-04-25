@@ -3,23 +3,38 @@ package at.coschtl.bakeassistant.ui.main;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import at.coschtl.bakeassistant.ImportExport;
 import at.coschtl.bakeassistant.R;
 import at.coschtl.bakeassistant.db.RecipeDbAdapter;
 import at.coschtl.bakeassistant.model.Recipe;
@@ -30,6 +45,7 @@ public class BakeAssistant extends AppCompatActivity {
     public static final String EXTRA_RECIPE_ID = "extraRecipeId";
     public static final String TAG_BAKE_ASSISTANT = BakeAssistant.class.getName();
     public static final int RC_OVERLAY_PERMISSION = 1111;
+    public static final int RC_CHOOSE_FILE = 22222;
 
     public static Context CONTEXT;
     public static String PKG;
@@ -128,17 +144,38 @@ public class BakeAssistant extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == RC_OVERLAY_PERMISSION) {
-            if  (!hasOverlayRight()) {
+            if (!hasOverlayRight()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(BakeAssistant.this);
-                                    builder.setMessage(R.string.can_not_run_without_permission).setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            System.exit(0);
-                                        }
-                                    }).show();
+                builder.setMessage(R.string.can_not_run_without_permission).setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        System.exit(0);
+                    }
+                }).show();
             } else {
                 initAndShowUi();
             }
+        } else if(requestCode == RC_CHOOSE_FILE && resultCode == RESULT_OK) {
+            Uri selectedfile = data.getData(); //The uri with the location of the file
+            InputStream in = null;
+            try {
+                ParcelFileDescriptor descriptor = BakeAssistant.this.getContentResolver().openFileDescriptor(selectedfile, "r");
+                in = new FileInputStream(descriptor.getFileDescriptor());
+                new ImportExport(BakeAssistant.this,recipeDbAdapter).importDb(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(BakeAssistant.this, "Can not import recipes: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else if (requestCode == RC_CHOOSE_FILE && resultCode == RESULT_OK) {
+            loadRecipes();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -161,6 +198,35 @@ public class BakeAssistant extends AppCompatActivity {
             recipesListView.setVisibility(View.VISIBLE);
             ((RecipeAdapter) recipesListView.getAdapter()).setData(recipes);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        menu.findItem(R.id.importRecipes).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent intent = new Intent(BakeAssistant.this, FileSelector.class);
+                startActivityForResult(intent, RC_CHOOSE_FILE);
+                return true;
+            }
+        });
+        menu.findItem(R.id.exportRecipes).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                try {
+                    String filename = ImportExport.createFilename();
+                    new ImportExport(BakeAssistant.this, recipeDbAdapter).exportDb(filename);
+                    Toast.makeText(BakeAssistant.this, "Export finished: " + filename, Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(BakeAssistant.this, "Can not export recipes: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
+        return true;
     }
 
     @Override

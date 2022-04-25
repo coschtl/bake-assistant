@@ -11,6 +11,7 @@
     <string name="new_recipe">Neues Rezept</string>
     <string name="step_no">Schritt No. </string>
     <string name="no_recipes">Es existieren noch keine Rezepte</string>
+    <string name="no_files">Es existieren noch keine exportierten Files</string>
     <string name="no_steps">Es existieren noch keine Schritte</string>
     <string name="app_name">Back-Assistent</string>
     <string name="default_times">Default Zeiten</string>
@@ -25,7 +26,7 @@
     <string name="baking">Backen</string>
     <string name="acclimatisation">Akklimatisieren</string>
 
-
+    <string name="menu">Menü</string>
     <string name="menu_edit">Bearbeiten</string>
     <string name="menu_up">Nach oben</string>
     <string name="menu_down">Nach unten</string>
@@ -52,4 +53,7 @@
     <string name="start_in_the_middle">Einzelne Schritte liegen in der Vergangenheit. Mit dem aktuell eingeplanten Schritt starten?</string>
     <string name="reason_manage_overlay_permissions">Im folgenden System-Dialog muss die Berechtigung <i>Am Anfang anzeigen</i> erteilt werden.\n\nDies ist nötig, damit die App Benachrichtigungen anzeigen kann, während sie im Hintergrund läuft.</string>
     <string name="can_not_run_without_permission">Die Applikation funktioniert ohne diese Berechtigung nicht!</string>
+
+    <string name="export_recipes">Rezepte Exportieren</string>
+    <string name="import_recipes">Rezepte Importieren</string>
 </resources>

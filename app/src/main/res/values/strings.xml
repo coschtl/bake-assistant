@@ -11,6 +11,7 @@
     <string name="new_recipe">new recipe</string>
     <string name="step_no">Step No. </string>
     <string name="no_recipes">no recipes available</string>
+    <string name="no_files">no files available</string>
     <string name="no_steps">no steps available</string>
     <string name="app_name">Bake Assistant</string>
     <string name="default_times">Default Times</string>
@@ -25,6 +26,7 @@
     <string name="baking">baking</string>
     <string name="acclimatisation">acclimatisation</string>
 
+    <string name="menu">Menu</string>
     <string name="menu_edit">Edit</string>
     <string name="menu_up">Up</string>
     <string name="menu_down">Down</string>
@@ -52,4 +54,6 @@
     <string name="reason_manage_overlay_permissions">In the following system-dialog, you must grant the right to <i>Display over other apps</i>.\n\nThe application needs this right to be able to show alarms when running in background.</string>
     <string name="can_not_run_without_permission">The application can not work properly without this permission!</string>
 
+    <string name="export_recipes">Export recipes</string>
+    <string name="import_recipes">Import recipes</string>
 </resources>

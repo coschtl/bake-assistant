@@ -108,6 +108,11 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     }
 
     public int getMinimumStepSet() {
+        for  (int i = instructionsAdapter.getCount() -1; i< minimumStepSet; i--) {
+            if ( instructionsAdapter.getItem(i).isDone()) {
+                return i;
+            }
+        }
         return minimumStepSet;
     }
 
@@ -204,6 +209,7 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
         }
         if (adjustTimeSeconds > 0) {
             instructionsAdapter.getInstructionCalculator().recalculateRemaining(currentInstructionPosition, adjustTimeSeconds);
+            instructionsAdapter.notifyDataSetChanged();
         }
         Instruction nextInstruction = instructionsAdapter.getItem(++currentInstructionPosition);
         instructionsAdapter.notifyDataSetChanged();

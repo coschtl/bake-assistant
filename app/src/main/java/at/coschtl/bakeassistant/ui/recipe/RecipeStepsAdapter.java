@@ -100,7 +100,7 @@ public class RecipeStepsAdapter extends RecyclerView.Adapter<RecipeStepsAdapter.
         public void setStep(Step step) {
             this.step = step;
             textView.setText(step.toString());
-            alarmImage.setVisibility(step.isAlarm() ? View.VISIBLE : View.GONE);
+            alarmImage.setVisibility(step.isAlarm() ? View.VISIBLE : View.INVISIBLE);
         }
 
         @Override

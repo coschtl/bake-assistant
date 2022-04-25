@@ -15,6 +15,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.main.FileSelector" android:screenOrientation="portrait" ></activity>
         <activity android:name=".ui.recipe.EditRecipe" android:screenOrientation="portrait" ></activity>
         <activity android:name=".ui.preparation.PrepareRecipe" android:screenOrientation="portrait" ></activity>
         <activity android:name=".ui.InstructionNotification" android:screenOrientation="portrait" ></activity>

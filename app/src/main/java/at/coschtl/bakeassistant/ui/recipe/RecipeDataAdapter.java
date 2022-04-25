@@ -40,9 +40,11 @@ public class RecipeDataAdapter {
     }
 
     public void saveRecipe() {
-        Recipe saved = recipeDbAdapter.save(recipe);
-        if (saved.getId() != recipe.getId()) {
-            recipe = saved;
+        if (recipe.getName() != null) {
+            Recipe saved = recipeDbAdapter.save(recipe);
+            if (saved.getId() != recipe.getId()) {
+                recipe = saved;
+            }
         }
     }
 
