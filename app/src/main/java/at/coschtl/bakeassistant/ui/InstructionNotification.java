@@ -2,16 +2,12 @@ package at.coschtl.bakeassistant.ui;
 
 import static at.coschtl.bakeassistant.util.UiUtil.setText;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 
@@ -22,9 +18,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
-import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import at.coschtl.bakeassistant.NotificationWorker;
@@ -39,7 +33,7 @@ public class InstructionNotification extends AppCompatActivity implements View.O
     public static final String EXTRA_SUPPRESS_ADJUST_ROW = "suppressAdjustRow";
     public static final String EXTRA_TIMESPAN_STRING = "timespanString";
     public static final String EXTRA_SHOW_ADJUST_ROW = "showAdjustRow";
-    private static final String ALARM_URI = "android.resource://" + BakeAssistant.PKG + "/" + R.raw.alarm;
+    private static final String ALARM_URI = "android.resource://" + BakeAssistant.PKG + "/" + R.raw.soft;
 
     private static final Logger LOGGER = Logger.getLogger(InstructionNotification.class.getName());
 
@@ -58,6 +52,8 @@ public class InstructionNotification extends AppCompatActivity implements View.O
         String action = extras.getString(BakeAssistant.PKG_PREF + EXTRA_ACTION);
         String timespan = extras.getString(BakeAssistant.PKG_PREF + EXTRA_TIMESPAN_STRING);
         View adjust = findViewById(R.id.adjust_time_row);
+        CheckBox adjust_time = findViewById(R.id.adjust_time);
+        adjust_time.setChecked(true);
 
         if (extras.getBoolean(BakeAssistant.PKG_PREF + EXTRA_SHOW_ADJUST_ROW, false)) {
             adjust.setVisibility(View.VISIBLE);
@@ -113,6 +109,11 @@ public class InstructionNotification extends AppCompatActivity implements View.O
         } else {
             sendBroadcastAndFinish();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        return;
     }
 
     private void alarmOff() {

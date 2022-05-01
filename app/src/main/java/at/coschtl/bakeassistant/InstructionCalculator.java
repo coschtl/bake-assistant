@@ -19,9 +19,9 @@ public class InstructionCalculator implements Serializable {
         instructions = new ArrayList<>(recipe.getSteps().size() + 1);
         Calendar calMin = Calendar.getInstance();
         Calendar calMax = Calendar.getInstance();
-        Date start = new Date();
-        calMin.setTime(start);
-        calMax.setTime(start);
+        Date now =  new Date();
+        calMin.setTime(now);
+        calMax.setTime(now);
         instructions.add(Instruction.getStartInstruction(calMin.getTime(), calMax.getTime()));
         for (Step step : recipe.getSteps()) {
             Instruction instruction = new Instruction(step);

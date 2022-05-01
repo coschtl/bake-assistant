@@ -108,8 +108,8 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     }
 
     public int getMinimumStepSet() {
-        for  (int i = instructionsAdapter.getCount() -1; i< minimumStepSet; i--) {
-            if ( instructionsAdapter.getItem(i).isDone()) {
+        for (int i = instructionsAdapter.getCount() - 1; i < minimumStepSet; i--) {
+            if (instructionsAdapter.getItem(i).isDone()) {
                 return i;
             }
         }
@@ -213,45 +213,46 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
         }
         Instruction nextInstruction = instructionsAdapter.getItem(++currentInstructionPosition);
         instructionsAdapter.notifyDataSetChanged();
-        preparationRunning = true;
 
+        long delay = nextInstruction.getTimeMin().date().getTime() - System.currentTimeMillis();
+        if (delay < 1000 * adjustTimeSeconds && !isPreparationRunning()) {
+            if (startInTheMiddle) {
+                startNextAlarm(adjustTimeSeconds);
+                return;
+            } else {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    startInTheMiddle = true;
+                                    startNextAlarm(adjustTimeSeconds);
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    //No button clicked
+                                    startButton.setVisibility(View.VISIBLE);
+                                    forceCloseOnBack = true;
+                                    currentInstruction.setActive(false);
+                                    instructionsAdapter.notifyDataSetChanged();
+                                    break;
+                            }
+                        }
+                    };
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setMessage(R.string.start_in_the_middle)
+                            .setPositiveButton(R.string.yes, dialogClickListener)
+                            .setNegativeButton(R.string.no, dialogClickListener)
+                            .show();
+            }
+            return;
+        }
+        preparationRunning = true;
         Data inputData = new Data.Builder()
                 .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, nextInstruction.hasAlarm())
                 .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_SUPPRESS_ADJUST_ROW, nextInstruction.getType() == Instruction.Type.LAST)
                 .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, nextInstruction.getAction())
                 .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, nextInstruction.getTimespanString())
                 .build();
-        long delay = nextInstruction.getTimeMin().date().getTime() - System.currentTimeMillis();
-        if (delay < 0) {
-            if (startInTheMiddle) {
-                startNextAlarm(adjustTimeSeconds);
-            } else {
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                startInTheMiddle = true;
-                                startNextAlarm(adjustTimeSeconds);
-                                break;
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                //No button clicked
-                                startButton.setVisibility(View.VISIBLE);
-                                forceCloseOnBack = true;
-                                currentInstruction.setActive(false);
-                                instructionsAdapter.notifyDataSetChanged();
-                                break;
-                        }
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.start_in_the_middle)
-                        .setPositiveButton(R.string.yes, dialogClickListener)
-                        .setNegativeButton(R.string.no, dialogClickListener)
-                        .show();
-            }
-            return;
-        }
         WorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
                 .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                 .setInputData(inputData)
