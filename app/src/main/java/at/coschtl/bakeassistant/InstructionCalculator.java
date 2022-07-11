@@ -19,7 +19,7 @@ public class InstructionCalculator implements Serializable {
         instructions = new ArrayList<>(recipe.getSteps().size() + 1);
         Calendar calMin = Calendar.getInstance();
         Calendar calMax = Calendar.getInstance();
-        Date now =  new Date();
+        Date now = new Date();
         calMin.setTime(now);
         calMax.setTime(now);
         instructions.add(Instruction.getStartInstruction(calMin.getTime(), calMax.getTime()));
@@ -49,7 +49,7 @@ public class InstructionCalculator implements Serializable {
     }
 
     public InstructionCalculator recalculatePredecessors(int changedInstructionPosition, int diffSeconds, int minimumStepToRecalculate) {
-        if (minimumStepToRecalculate >= 0  && minimumStepToRecalculate<changedInstructionPosition) {
+        if (minimumStepToRecalculate >= 0 && minimumStepToRecalculate < changedInstructionPosition) {
             return this;
         }
         Calendar cal = Calendar.getInstance();

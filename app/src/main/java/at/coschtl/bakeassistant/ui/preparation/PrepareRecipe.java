@@ -33,6 +33,7 @@ import at.coschtl.bakeassistant.model.Recipe;
 import at.coschtl.bakeassistant.ui.InstructionNotification;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 
+
 public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, View.OnClickListener {
 
     public static final String EXTRA_ADJUST_TIME_SECONDS = "adjustTimeSecondss";
@@ -60,6 +61,7 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     private View startButton;
     private boolean startInTheMiddle;
     private int minimumStepSet = -1;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,7 +97,7 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
             startButton.setVisibility(View.GONE);
             long origStartTime = instructionsAdapter.getItem(0).getTimeMin().date().getTime();
             long now = System.currentTimeMillis();
-            if (origStartTime < now && origStartTime + 300000L > now) {
+            if (origStartTime < now && origStartTime + 90000L > now) {
                 instructionsAdapter.getInstructionCalculator().recalculateBySeconds(0, (int) ((now - origStartTime + 1000L) / 1000L), 0);
                 instructionsAdapter.notifyDataSetChanged();
             }
@@ -220,29 +222,29 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
                 startNextAlarm(adjustTimeSeconds);
                 return;
             } else {
-                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    startInTheMiddle = true;
-                                    startNextAlarm(adjustTimeSeconds);
-                                    break;
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    //No button clicked
-                                    startButton.setVisibility(View.VISIBLE);
-                                    forceCloseOnBack = true;
-                                    currentInstruction.setActive(false);
-                                    instructionsAdapter.notifyDataSetChanged();
-                                    break;
-                            }
+                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                startInTheMiddle = true;
+                                startNextAlarm(adjustTimeSeconds);
+                                break;
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                //No button clicked
+                                startButton.setVisibility(View.VISIBLE);
+                                forceCloseOnBack = true;
+                                currentInstruction.setActive(false);
+                                instructionsAdapter.notifyDataSetChanged();
+                                break;
                         }
-                    };
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setMessage(R.string.start_in_the_middle)
-                            .setPositiveButton(R.string.yes, dialogClickListener)
-                            .setNegativeButton(R.string.no, dialogClickListener)
-                            .show();
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(R.string.start_in_the_middle)
+                        .setPositiveButton(R.string.yes, dialogClickListener)
+                        .setNegativeButton(R.string.no, dialogClickListener)
+                        .show();
             }
             return;
         }

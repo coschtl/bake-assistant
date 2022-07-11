@@ -5,7 +5,6 @@ import static at.coschtl.bakeassistant.util.UiUtil.setText;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 
@@ -47,7 +46,7 @@ public class TimeSetter implements View.OnClickListener {
     }
 
     private int getDayPosition(Date date) {
-        for (int i=0; i<datePicker.getAdapter().getCount(); i++) {
+        for (int i = 0; i < datePicker.getAdapter().getCount(); i++) {
             Day day = (Day) datePicker.getAdapter().getItem(i);
             if (day.toString().equals(new Day(date).toString())) {
                 return i;
@@ -82,14 +81,14 @@ public class TimeSetter implements View.OnClickListener {
         Time executionTime;
         Instruction instruction = instruction();
         if (datePicker.getVisibility() == View.VISIBLE) {
-            executionTime =  Time.of(((Day) datePicker.getSelectedItem()).getDate());
+            executionTime = Time.of(((Day) datePicker.getSelectedItem()).getDate());
         } else {
-            executionTime =  Time.of(instruction.getTimeMin().date());
+            executionTime = Time.of(instruction.getTimeMin().date());
         }
         executionTime.setHour(timePicker.getCurrentHour()).setMinute(timePicker.getCurrentMinute()).setSecond(0);
-        int diffSeconds = (int) ((executionTime.date().getTime() - instruction.getTimeMin().date().getTime()) /1000L);
+        int diffSeconds = (int) ((executionTime.date().getTime() - instruction.getTimeMin().date().getTime()) / 1000L);
         instructionsAdapter.getInstructionCalculator().recalculateBySeconds(position, diffSeconds, activity.getMinimumStepSet());
-        instructionsAdapter. notifyDataSetChanged();
+        instructionsAdapter.notifyDataSetChanged();
         activity.hideTimeSelectionUi(position);
         if (!activity.isPreparationRunning()) {
             row.getRootView().findViewById(R.id.start_now_button).setVisibility(View.VISIBLE);

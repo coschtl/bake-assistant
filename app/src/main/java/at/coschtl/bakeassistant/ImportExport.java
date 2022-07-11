@@ -31,16 +31,6 @@ public class ImportExport {
         this.recipeDbAdapter = recipeDbAdapter;
     }
 
-    public void exportDb(String filename) throws IOException {
-        List<Recipe> allRecipes = recipeDbAdapter.findAllRecipes(true);
-        Gson gson = new Gson();
-        String json = gson.toJson(allRecipes);
-        System.out.println("exporting to " + filename);
-        try (FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE)) {
-            fos.write(json.getBytes(StandardCharsets.UTF_8));
-        }
-    }
-
     @NonNull
     public static String createFilename() {
         Calendar cal = Calendar.getInstance();
@@ -62,6 +52,16 @@ public class ImportExport {
             b.append("0");
         }
         b.append(iString);
+    }
+
+    public void exportDb(String filename) throws IOException {
+        List<Recipe> allRecipes = recipeDbAdapter.findAllRecipes(true);
+        Gson gson = new Gson();
+        String json = gson.toJson(allRecipes);
+        System.out.println("exporting to " + filename);
+        try (FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE)) {
+            fos.write(json.getBytes(StandardCharsets.UTF_8));
+        }
     }
 
     public void importDb(InputStream in) {

@@ -16,6 +16,7 @@ public class Instruction implements Serializable {
     private Time timeMax;
     private boolean done;
     private boolean active;
+
     public Instruction(Step step) {
         this.step = step;
         this.action = step.getAction().toString();

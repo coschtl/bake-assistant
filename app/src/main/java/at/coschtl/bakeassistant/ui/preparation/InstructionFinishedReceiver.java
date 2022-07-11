@@ -7,7 +7,6 @@ import android.content.Intent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import at.coschtl.bakeassistant.ui.InstructionNotification;
 import at.coschtl.bakeassistant.ui.main.BakeAssistant;
 
 public class InstructionFinishedReceiver extends BroadcastReceiver {

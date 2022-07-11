@@ -46,7 +46,7 @@ public class FileSelector extends AppCompatActivity {
         noFilesTextView = findViewById(R.id.files_no_file);
         filesListView = findViewById(R.id.files_listview);
 
-        FileNamesAdapter adapter = new  FileNamesAdapter(fileNames, this, recipeDbAdapter);
+        FileNamesAdapter adapter = new FileNamesAdapter(fileNames, this, recipeDbAdapter);
         filesListView.setAdapter(adapter);
         filesListView.setLayoutManager(new LinearLayoutManager(this));
         if (fileNames.isEmpty()) {

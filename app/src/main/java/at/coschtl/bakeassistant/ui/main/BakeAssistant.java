@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,18 +19,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import at.coschtl.bakeassistant.ImportExport;
@@ -155,13 +150,13 @@ public class BakeAssistant extends AppCompatActivity {
             } else {
                 initAndShowUi();
             }
-        } else if(requestCode == RC_CHOOSE_FILE && resultCode == RESULT_OK) {
+        } else if (requestCode == RC_CHOOSE_FILE && resultCode == RESULT_OK) {
             Uri selectedfile = data.getData(); //The uri with the location of the file
             InputStream in = null;
             try {
                 ParcelFileDescriptor descriptor = BakeAssistant.this.getContentResolver().openFileDescriptor(selectedfile, "r");
                 in = new FileInputStream(descriptor.getFileDescriptor());
-                new ImportExport(BakeAssistant.this,recipeDbAdapter).importDb(in);
+                new ImportExport(BakeAssistant.this, recipeDbAdapter).importDb(in);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(BakeAssistant.this, "Can not import recipes: " + e.getMessage(), Toast.LENGTH_SHORT).show();

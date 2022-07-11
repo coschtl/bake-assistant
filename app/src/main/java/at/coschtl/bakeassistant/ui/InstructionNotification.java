@@ -1,8 +1,11 @@
 package at.coschtl.bakeassistant.ui;
 
+import static android.media.AudioManager.STREAM_MUSIC;
 import static at.coschtl.bakeassistant.util.UiUtil.setText;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +21,8 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkRequest;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -36,15 +41,21 @@ public class InstructionNotification extends AppCompatActivity implements View.O
     private static final String ALARM_URI = "android.resource://" + BakeAssistant.PKG + "/" + R.raw.soft;
 
     private static final Logger LOGGER = Logger.getLogger(InstructionNotification.class.getName());
-
+    int origVolume;
     private MediaPlayer mediaPlayer;
     private long displayStartMillis;
+    private Timer timer;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         LOGGER.fine("onCreate");
         super.onCreate(savedInstanceState);
+        AudioManager audioManager = audioManager();
+        origVolume = audioManager.getStreamVolume(STREAM_MUSIC);
+        audioManager.setStreamVolume(STREAM_MUSIC, (int) (audioManager.getStreamMaxVolume(STREAM_MUSIC) * 0.9), AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+
         mediaPlayer = new MediaPlayer();
+        timer = new Timer();
         displayStartMillis = System.currentTimeMillis();
         setContentView(R.layout.alarm);
         Bundle extras = getIntent().getExtras();
@@ -97,17 +108,35 @@ public class InstructionNotification extends AppCompatActivity implements View.O
             ImageView doneButton = findViewById(R.id.done);
             doneButton.setOnClickListener(InstructionNotification.this);
 
-            try {
-                mediaPlayer.setDataSource(this, Uri.parse(ALARM_URI));
-                mediaPlayer.prepareAsync();
-                mediaPlayer.setOnPreparedListener(mp -> {
-                    mp.start();
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    playAlarm();
+                }
+            }, 0, 15000L);
         } else {
             sendBroadcastAndFinish();
+        }
+    }
+
+    private AudioManager audioManager() {
+        return (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+    }
+
+    private void playAlarm() {
+        try {
+            mediaPlayer.reset();
+            mediaPlayer.setDataSource(InstructionNotification.this, Uri.parse(ALARM_URI));
+            mediaPlayer.prepareAsync();
+            mediaPlayer.setVolume(0.9f, 0.9f);
+            mediaPlayer.setOnPreparedListener(mp -> {
+                mp.start();
+            });
+            mediaPlayer.setOnCompletionListener(mp -> {
+
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -117,6 +146,7 @@ public class InstructionNotification extends AppCompatActivity implements View.O
     }
 
     private void alarmOff() {
+        timer.cancel();
         try {
             if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
@@ -126,6 +156,7 @@ public class InstructionNotification extends AppCompatActivity implements View.O
         } catch (Exception e) {
             e.printStackTrace();
         }
+        audioManager().setStreamVolume(STREAM_MUSIC, origVolume, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
     }
 
     @Override
