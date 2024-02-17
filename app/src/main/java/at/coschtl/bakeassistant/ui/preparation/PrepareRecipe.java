@@ -1,7 +1,11 @@
 package at.coschtl.bakeassistant.ui.preparation;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -23,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import at.coschtl.bakeassistant.AlarmReceiver;
 import at.coschtl.bakeassistant.Instruction;
 import at.coschtl.bakeassistant.InstructionCalculator;
 import at.coschtl.bakeassistant.NotificationWorker;
@@ -62,6 +67,8 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
     private boolean startInTheMiddle;
     private int minimumStepSet = -1;
 
+    private AlarmManager alarmManager;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,6 +93,9 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
 
         startButton = findViewById(R.id.start_now_button);
         startButton.setOnClickListener(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager = this.getSystemService(AlarmManager.class);
+        }
     }
 
     @Override
@@ -249,19 +259,47 @@ public class PrepareRecipe extends AppCompatActivity implements AlarmStarter, Vi
             return;
         }
         preparationRunning = true;
-        Data inputData = new Data.Builder()
-                .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, nextInstruction.hasAlarm())
-                .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_SUPPRESS_ADJUST_ROW, nextInstruction.getType() == Instruction.Type.LAST)
-                .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, nextInstruction.getAction())
-                .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, nextInstruction.getTimespanString())
-                .build();
-        WorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
-                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .setInputData(inputData)
-                .addTag(BakeAssistant.TAG_BAKE_ASSISTANT)
-                .build();
-        WorkManager.getInstance(this).enqueue(uploadWorkRequest);
 
+        boolean useWorkmanager = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                Intent notificaionWorkerIntent = new Intent(getApplicationContext(), AlarmReceiver.class)
+                        .putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, nextInstruction.hasAlarm())
+                        .putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_SUPPRESS_ADJUST_ROW, nextInstruction.getType() == Instruction.Type.LAST)
+                        .putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, nextInstruction.getAction())
+                        .putExtra(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, nextInstruction.getTimespanString());
+
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + delay,
+                        PendingIntent.getBroadcast(
+                                this,
+                                notificaionWorkerIntent.hashCode(),
+                                notificaionWorkerIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                        )
+                );
+                useWorkmanager = false;
+            } catch (SecurityException e) {
+                Toast.makeText(this, "Can not set next alarm: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
+
+        // fallback
+        if (useWorkmanager) {
+            Data inputData = new Data.Builder()
+                    .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_HAS_ALARM, nextInstruction.hasAlarm())
+                    .putBoolean(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_SUPPRESS_ADJUST_ROW, nextInstruction.getType() == Instruction.Type.LAST)
+                    .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_ACTION, nextInstruction.getAction())
+                    .putString(BakeAssistant.PKG_PREF + InstructionNotification.EXTRA_TIMESPAN_STRING, nextInstruction.getTimespanString())
+                    .build();
+            WorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                    .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+                    .setInputData(inputData)
+                    .addTag(BakeAssistant.TAG_BAKE_ASSISTANT)
+                    .build();
+            WorkManager.getInstance(this).enqueue(uploadWorkRequest);
+        }
         LOGGER.fine("alarm scheduled");
     }
 }
